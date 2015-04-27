@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="script.kodisplay" name="KoDisplay" version="0.0.1" provider-name="MichaeL (vitalogy)">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.service" library="tftmain.py" start="login">
+    <provides></provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>KoDisplay</summary>
+      <description>KoDisplay (Kodi Display)</description>
+      <description lang="de">KoDisplay (Kodi Display)</description>
+    <disclaimer></disclaimer>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
+    <platform>linux</platform>
+  </extension>
+</addon>
+
