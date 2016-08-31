@@ -1,3 +1,5 @@
 # script.kodisplay
 
-WIP
+Dependencies: pygame
+
+# WIP
