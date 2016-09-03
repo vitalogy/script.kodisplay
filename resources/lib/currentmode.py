@@ -3,16 +3,19 @@ import xbmc
 import xbmcgui
 import config as glob
 
+glob.modes = 'startscreen', 'general', 'navigation', 'music', 'video', 'pvr', 'picture', 'weather', 'screensaver'
+
 class TFT_MODE:
-	STARTLOGO  = 0
-	GENERAL    = 1
-	NAVIGATION = 2
-	MUSIC      = 3
-	VIDEO      = 4
-	PVR        = 5
-	PICTURE    = 6
-	WEATHER    = 7
-	MAX_MODES  = 9
+	STARTSCREEN = 0
+	GENERAL     = 1
+	NAVIGATION  = 2
+	MUSIC       = 3
+	VIDEO       = 4
+	PVR         = 5
+	PICTURE     = 6
+	WEATHER     = 7
+	SCREENSAVER = 8
+	MAX_MODES   = 9
 
 class WINDOW_IDS:
 	WINDOW_MAINMENU              = 10000
@@ -37,7 +40,7 @@ class WINDOW_IDS:
 
 
 
-def playerIsRunning():
+def playingSomething():
 	player = "stopped"
 	if xbmc.getCondVisibility("Player.Playing"):
 		player = "playing"

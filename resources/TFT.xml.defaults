@@ -1,0 +1,142 @@
+<tft>
+	<startscreen>
+		<image path="$INFO[Distrologo]">
+			<resx>300</resx>
+			<resy>220</resy>
+			<xpos>center</xpos>
+			<ypos>center</ypos>
+		</image>
+		<text display="$INFO[Distroname]">
+			<font>None</font>
+			<size>40</size>
+			<color>#FF0000</color>
+			<xpos>center</xpos>
+			<ypos>-20</ypos>
+		</text>
+	</startscreen>
+	<general>
+		<image path="kodi.png">
+			<resx>360</resx>
+			<resy>360</resy>
+			<xpos>80</xpos>
+			<ypos>30</ypos>
+		</image>
+		<text display="$INFO[System.Time(hh:mm:ss)]">
+			<font>None</font>
+			<size>80</size>
+			<color>#FFFFFF</color>
+			<xpos>20</xpos>
+			<ypos>50</ypos>
+		</text>
+	</general>
+	<navigation>
+		<image path="kodi.png">
+			<resx>80</resx>
+			<resy>80</resy>
+			<xpos>-5</xpos>
+			<ypos>5</ypos>
+		</image>
+		<text display="$INFO[System.Time(hh:mm:ss)]">
+			<font>None</font>
+			<size>34</size>
+			<color>#FFFFFF</color>
+			<xpos>center</xpos>
+			<ypos>5</ypos>
+		</text>
+		<text display="$INFO[System.CurrentWindow]">
+			<font>None</font>
+			<size>32</size>
+			<color>#EEE0E5</color>
+			<xpos>center</xpos>
+			<ypos>center</ypos>
+		</text>
+		<text display="$INFO[System.CurrentControl]">
+			<font>None</font>
+			<size>40</size>
+			<color>#EEDC82</color>
+			<xpos>center</xpos>
+			<ypos>-50</ypos>
+		</text>
+	</navigation>
+	<music>
+		<text display="music">
+			<font>None</font>
+			<size>24</size>
+			<color>#FF0000</color>
+			<xpos>center</xpos>
+			<ypos>50</ypos>
+		</text>
+	</music>
+	<video>
+		<text display="video">
+			<font>None</font>
+			<size>24</size>
+			<color>#FF0000</color>
+			<xpos>center</xpos>
+			<ypos>50</ypos>
+		</text>
+		<text display="$INFO[Player.Title]">
+			<font>None</font>
+			<size>36</size>
+			<color>#FFFFFF</color>
+			<xpos>20</xpos>
+			<ypos>100</ypos>
+		</text>
+		<text display="$INFO[Player.Time]">
+			<font>None</font>
+			<size>40</size>
+			<color>#FFFFFF</color>
+			<xpos>20</xpos>
+			<ypos>140</ypos>
+		</text>
+		<text display="$INFO[Player.Duration]">
+			<font>None</font>
+			<size>40</size>
+			<color>#FFFFFF</color>
+			<xpos>-20</xpos>
+			<ypos>140</ypos>
+		</text>
+		<progressbar>
+			<width>300</width>
+			<height>30</height>
+			<xpos>10</xpos>
+			<ypos>180</ypos>
+		</progressbar>
+	</video>
+	<pvr>
+		<text display="pvr">
+			<font>None</font>
+			<size>24</size>
+			<color>#FF0000</color>
+			<xpos>center</xpos>
+			<ypos>50</ypos>
+		</text>
+	</pvr>
+	<picture>
+		<text display="picture">
+			<font>None</font>
+			<size>24</size>
+			<color>#FF0000</color>
+			<xpos>center</xpos>
+			<ypos>50</ypos>
+		</text>
+	</picture>
+	<weather>
+		<text display="weather">
+			<font>None</font>
+			<size>24</size>
+			<color>#FF0000</color>
+			<xpos>center</xpos>
+			<ypos>50</ypos>
+		</text>
+	</weather>
+	<screensaver>
+		<text display="screensaver">
+			<font>None</font>
+			<size>24</size>
+			<color>#FF0000</color>
+			<xpos>center</xpos>
+			<ypos>50</ypos>
+		</text>
+	</screensaver>
+</tft>
