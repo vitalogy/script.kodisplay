@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+
+  <!--Common-->
+  <string id="32100">Allgemein</string>
+  <string id="32101">Bilder pro Sekunde (FPS)</string>
+  <string id="32102">Zeige Startscreens</string>
+  <string id="32103">Anzeigedauer des Startscreens (s)</string>
+  <string id="32104">Anzeigedauer der Navigationsansicht (s)</string>
+
+  <!--Debug-->
+  <string id="32200">Debug</string>
+  <string id="32201">Debug f√r dieses Addon einschalten</string>
+
+  <!--Notifications-->
+  <string id="32500">Fehler beim Laden von SDL!</string>
+  <string id="32501">Fehler beim Importieren von pygame!</string>
+  <string id="32502">TFT.xml nicht gefunden and TFT.xml.defaults fehlt!</string>
+  <string id="32503">TFT.xml konnte nicht angelegt werden!</string>
+  <string id="32504">Einlesen der Datei TFT.xml fehlgeschlagen!</string>
+  <string id="32505">Fehler in der Datei TFT.xml!</string>
+  
+</strings>

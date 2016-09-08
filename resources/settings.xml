@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+  <category label="32100">
+    <setting id="fps" type="slider" label="32101" option="int" default="5" range="1,30" />
+    <setting id="displaystartscreen" type="bool" label="32102" default="true" />
+    <setting id="startscreentime" enable="eq(-1,true)" type="slider" label="32103" option="int" default="3" range="1,10" />
+    <setting id="navtimeout" type="slider" label="32104" option="int" default="4" range="1,10" />
+  </category>
+  <category label="32200">
+    <setting id="enabledebug" type="bool" label="32201" default="false" />
+  </category>
+</settings>

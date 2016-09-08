@@ -3,7 +3,7 @@ import xbmc
 import xbmcgui
 import config as glob
 
-glob.modes = 'startscreen', 'general', 'navigation', 'music', 'video', 'pvr', 'picture', 'weather', 'screensaver'
+modes = 'startscreen', 'general', 'navigation', 'music', 'video', 'pvr', 'picture', 'weather', 'screensaver'
 
 class TFT_MODE:
 	STARTSCREEN = 0
@@ -76,8 +76,7 @@ def getWinMode():
 	return (ret, str(WindowID))
 
 
-def isNavigation():
-	navtimeout = 10
+def isNavigation(navtimeout):
 	ret = False
 
 	menu = xbmc.getInfoLabel("$INFO[System.CurrentWindow]")

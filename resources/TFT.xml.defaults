@@ -11,36 +11,64 @@
 			<size>40</size>
 			<color>#FF0000</color>
 			<xpos>center</xpos>
-			<ypos>-20</ypos>
+			<ypos>-30</ypos>
+		</text>
+		<text display="Kodi $INFO[System.BuildVersionShort]">
+			<font>None</font>
+			<size>24</size>
+			<color>#FF0000</color>
+			<xpos>center</xpos>
+			<ypos>-8</ypos>
 		</text>
 	</startscreen>
 	<general>
 		<image path="kodi.png">
-			<resx>360</resx>
-			<resy>360</resy>
+			<resx>350</resx>
+			<resy>350</resy>
 			<xpos>80</xpos>
 			<ypos>30</ypos>
 		</image>
+		<image path="muted.png">
+			<visible>Player.Muted</visible>
+			<resx>30</resx>
+			<resy>30</resy>
+			<xpos>center</xpos>
+			<ypos>5</ypos>
+		</image>
 		<text display="$INFO[System.Time(hh:mm:ss)]">
-			<font>None</font>
+			<font>MC360.ttf</font>
 			<size>80</size>
+			<color>#DFDFDF</color>
+			<xpos>center</xpos>
+			<ypos>center</ypos>
+		</text>
+		<text display="$INFO[Weather.Temperature]">
+			<font>None</font>
+			<size>50</size>
 			<color>#FFFFFF</color>
-			<xpos>20</xpos>
-			<ypos>50</ypos>
+			<xpos>5</xpos>
+			<ypos>200</ypos>
 		</text>
 	</general>
 	<navigation>
 		<image path="kodi.png">
 			<resx>80</resx>
 			<resy>80</resy>
-			<xpos>-5</xpos>
+			<xpos>5</xpos>
+			<ypos>5</ypos>
+		</image>
+		<image path="muted.png">
+			<visible>Player.Muted</visible>
+			<resx>30</resx>
+			<resy>30</resy>
+			<xpos>center</xpos>
 			<ypos>5</ypos>
 		</image>
 		<text display="$INFO[System.Time(hh:mm:ss)]">
 			<font>None</font>
 			<size>34</size>
 			<color>#FFFFFF</color>
-			<xpos>center</xpos>
+			<xpos>-5</xpos>
 			<ypos>5</ypos>
 		</text>
 		<text display="$INFO[System.CurrentWindow]">
@@ -51,7 +79,7 @@
 			<ypos>center</ypos>
 		</text>
 		<text display="$INFO[System.CurrentControl]">
-			<font>None</font>
+			<font>MC360.ttf</font>
 			<size>40</size>
 			<color>#EEDC82</color>
 			<xpos>center</xpos>
@@ -59,22 +87,80 @@
 		</text>
 	</navigation>
 	<music>
-		<text display="music">
+		<text display="$INFO[System.Time(hh:mm:ss)]">
 			<font>None</font>
-			<size>24</size>
-			<color>#FF0000</color>
-			<xpos>center</xpos>
-			<ypos>50</ypos>
+			<size>36</size>
+			<color>#CECECE</color>
+			<xpos>-5</xpos>
+			<ypos>5</ypos>
 		</text>
+		<image path="muted.png">
+			<visible>Player.Muted</visible>
+			<resx>30</resx>
+			<resy>30</resy>
+			<xpos>center</xpos>
+			<ypos>5</ypos>
+		</image>
+		<text display="$INFO[MusicPlayer.Artist]">
+			<font>MC360.ttf</font>
+			<size>34</size>
+			<color>#C1C1C1</color>
+			<xpos>5</xpos>
+			<ypos>20</ypos>
+		</text>
+		<text display="$INFO[MusicPlayer.Album]">
+			<font>MC360.ttf</font>
+			<size>34</size>
+			<color>#ABABAB</color>
+			<xpos>5</xpos>
+			<ypos>60</ypos>
+		</text>
+		<text display="$INFO[MusicPlayer.Title]">
+			<font>MC360.ttf</font>
+			<size>34</size>
+			<color>#858585</color>
+			<xpos>5</xpos>
+			<ypos>100</ypos>
+		</text>
+		<text display="$INFO[Player.Time]">
+			<font>None</font>
+			<size>40</size>
+			<color>#949494</color>
+			<xpos>20</xpos>
+			<ypos>160</ypos>
+		</text>
+		<text display="$INFO[Player.Duration]">
+			<font>None</font>
+			<size>40</size>
+			<color>#949494</color>
+			<xpos>-20</xpos>
+			<ypos>160</ypos>
+		</text>
+		<progressbar>
+			<width>300</width>
+			<height>30</height>
+			<xpos>center</xpos>
+			<ypos>200</ypos>
+			<border>2</border>
+			<barcolor>#606060</barcolor>
+			<progresscolor>#AB0000</progresscolor>
+		</progressbar>
 	</music>
 	<video>
-		<text display="video">
+		<text display="$INFO[System.Time(hh:mm:ss)]">
 			<font>None</font>
-			<size>24</size>
-			<color>#FF0000</color>
-			<xpos>center</xpos>
-			<ypos>50</ypos>
+			<size>34</size>
+			<color>#FFFFFF</color>
+			<xpos>-5</xpos>
+			<ypos>5</ypos>
 		</text>
+		<image path="muted.png">
+			<visible>Player.Muted</visible>
+			<resx>30</resx>
+			<resy>30</resy>
+			<xpos>center</xpos>
+			<ypos>5</ypos>
+		</image>
 		<text display="$INFO[Player.Title]">
 			<font>None</font>
 			<size>36</size>
@@ -85,25 +171,42 @@
 		<text display="$INFO[Player.Time]">
 			<font>None</font>
 			<size>40</size>
-			<color>#FFFFFF</color>
+			<color>#949494</color>
 			<xpos>20</xpos>
-			<ypos>140</ypos>
+			<ypos>160</ypos>
 		</text>
 		<text display="$INFO[Player.Duration]">
 			<font>None</font>
 			<size>40</size>
-			<color>#FFFFFF</color>
+			<color>#949494</color>
 			<xpos>-20</xpos>
-			<ypos>140</ypos>
+			<ypos>160</ypos>
 		</text>
 		<progressbar>
 			<width>300</width>
 			<height>30</height>
-			<xpos>10</xpos>
-			<ypos>180</ypos>
+			<xpos>center</xpos>
+			<ypos>200</ypos>
+			<border>2</border>
+			<barcolor>#606060</barcolor>
+			<progresscolor>#AB0000</progresscolor>
 		</progressbar>
 	</video>
 	<pvr>
+		<text display="$INFO[System.Time(hh:mm:ss)]">
+			<font>None</font>
+			<size>34</size>
+			<color>#FFFFFF</color>
+			<xpos>-5</xpos>
+			<ypos>5</ypos>
+		</text>
+		<image path="muted.png">
+			<visible>Player.Muted</visible>
+			<resx>30</resx>
+			<resy>30</resy>
+			<xpos>center</xpos>
+			<ypos>5</ypos>
+		</image>
 		<text display="pvr">
 			<font>None</font>
 			<size>24</size>
@@ -111,8 +214,22 @@
 			<xpos>center</xpos>
 			<ypos>50</ypos>
 		</text>
+		<progressbar>
+			<width>300</width>
+			<height>40</height>
+			<xpos>center</xpos>
+			<ypos>190</ypos>
+			<border>2</border>
+		</progressbar>
 	</pvr>
 	<picture>
+		<text display="$INFO[System.Time(hh:mm:ss)]">
+			<font>None</font>
+			<size>34</size>
+			<color>#FFFFFF</color>
+			<xpos>-5</xpos>
+			<ypos>5</ypos>
+		</text>
 		<text display="picture">
 			<font>None</font>
 			<size>24</size>
@@ -122,6 +239,13 @@
 		</text>
 	</picture>
 	<weather>
+		<text display="$INFO[System.Time(hh:mm:ss)]">
+			<font>None</font>
+			<size>34</size>
+			<color>#FFFFFF</color>
+			<xpos>-5</xpos>
+			<ypos>5</ypos>
+		</text>
 		<text display="weather">
 			<font>None</font>
 			<size>24</size>
@@ -131,6 +255,13 @@
 		</text>
 	</weather>
 	<screensaver>
+		<text display="$INFO[System.Time(hh:mm:ss)]">
+			<font>None</font>
+			<size>34</size>
+			<color>#FFFFFF</color>
+			<xpos>-5</xpos>
+			<ypos>5</ypos>
+		</text>
 		<text display="screensaver">
 			<font>None</font>
 			<size>24</size>

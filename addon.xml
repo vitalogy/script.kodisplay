@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.kodisplay" name="KoDisplay" version="0.0.6" provider-name="MichaeL (vitalogy)">
+<addon id="script.kodisplay" name="KoDisplay" version="0.0.7" provider-name="MichaeL (vitalogy)">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="xbmc.python" version="2.19.0"/>
   </requires>
   <extension point="xbmc.service" library="tftmain.py" start="login">
     <provides></provides>

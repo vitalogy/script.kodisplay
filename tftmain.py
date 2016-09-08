@@ -4,29 +4,26 @@ import time
 import xbmc
 import xbmcaddon
 import xbmcgui
+#import string
 
 from ctypes import *
-#from array import array
-from xml.etree import ElementTree as xmltree
 
 
 __addon__         = xbmcaddon.Addon()
 __addonversion__  = __addon__.getAddonInfo('version')
 __addonid__       = __addon__.getAddonInfo('id')
 __addonname__     = __addon__.getAddonInfo('name')
-__cwd__           = __addon__.getAddonInfo('path')
-__icon__          = os.path.join(__cwd__, 'icon.png')
-__lib__           = os.path.join(__cwd__, 'resources', 'lib')
-__media__         = os.path.join(__cwd__, 'resources', 'media')
-__settings__      = xbmcaddon.Addon(id=__addonid__)
-__tftxml__        = xbmc.translatePath( os.path.join("special://masterprofile","TFT.xml"))
-__tftdefaultxml__ = xbmc.translatePath( os.path.join(__cwd__, "resources", "TFT.xml.defaults"))
+__path__          = __addon__.getAddonInfo('path')
+__icon__          = os.path.join(__path__, 'icon.png')
+__lib__           = os.path.join(__path__, 'resources', 'lib')
+__media__         = os.path.join(__path__, 'resources', 'media')
 
 BASE_RESOURCE_PATH = xbmc.translatePath(__lib__)
 sys.path.insert(0, BASE_RESOURCE_PATH)
 
 from helper import *
 from currentmode import *
+from modeslist import ModesList
 import config as glob
 
 glob.navTimer = time.time()
@@ -34,10 +31,10 @@ glob.navTimer = time.time()
 os.environ["SDL_VIDEODRIVER"] = "fbcon"
 os.environ["SDL_FBDEV"] = "/dev/fb1"
 
-glob.distro = getDistroName() # from helper.py
-xbmc_log(xbmc.LOGNOTICE, 'Running on ' + glob.distro)
+distro = getDistroName() # from helper.py
+xbmc_log(xbmc.LOGNOTICE, 'Version %s running on %s' %(__addonversion__, distro))
 
-if glob.distro == 'LibreELEC':
+if distro == 'LibreELEC':
 	# running on LibreELEC
 	#  1.   check for existing lib.tgz (lib.tgz includes SDL-1.2 & pygame)
 	#  1.1.   if the directories SDL and pygame exist, delete them
@@ -68,7 +65,7 @@ if glob.distro == 'LibreELEC':
 		cdll.LoadLibrary(os.path.join(__lib__, 'SDL', 'libSDL_image.so'))
 		cdll.LoadLibrary(os.path.join(__lib__, 'SDL', 'libSDL_ttf.so'))
 	except:
-		text = __settings__.getLocalizedString(32500)
+		text = __addon__.getLocalizedString(32500)
 		notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
 		sys.exit(1)
 
@@ -77,105 +74,30 @@ try:
 	import pygame
 	from pygame.locals import *
 except:
-	text = __settings__.getLocalizedString(32501)
+	text = __addon__.getLocalizedString(32501)
 	notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
 	sys.exit(1)
 
 
-class displayProgressBar():
-	def __init__(self, width, height, bkcolor, border, bordercolor, barcolor, xpos, cx, ypos, cy):
-		self.rect_bar = pygame.Rect(xpos, ypos, width, height)
-		self.border = border
-
-		playtime = timeToSecs(xbmc.getInfoLabel("Player.Time(hh:mm:ss)"))
-		duration = timeToSecs(xbmc.getInfoLabel("Player.Duration(hh:mm:ss)"))
-
-		if playtime > 0:
-			percent = int(( 1. * self.rect_bar.width / duration ) * playtime)
-		else:
-			percent = 0
-
-		self.rect_done = pygame.Rect(self.rect_bar)
-		self.rect_done.width = percent
-
-		self.intbkcolor = hexToRGB(bkcolor)
-		self.intbordercolor = hexToRGB(bordercolor)
-		self.intbarcolor = hexToRGB(barcolor)
-
-#      ToDo: implement 'center'
-#		self.rectpos = self.rect_bar.get_rect()
-#		if xpos < 0:
-#			self.rectpos.x = glob.display_w - self.rect_bar.get_width() + xpos
-#		else:
-#			if cx == 1:
-#				self.rectpos.centerx = xpos
-#			else:
-#				self.rectpos.x = xpos
-#		if ypos < 0:
-#			self.rectpos.y = glob.display_h - self.rect_bar.get_height() + ypos
-#		else:
-#			if cy == 1:
-#				self.rectpos.centerx = ypos
-#			else:
-#				self.rectpos.y = ypos
 
 
-	def draw(self, surface):
-		pygame.draw.rect(surface, self.intbkcolor, self.rect_bar )
-		pygame.draw.rect(surface, self.intbarcolor, self.rect_done )
-		pygame.draw.rect(surface, self.intbordercolor, self.rect_bar, self.border)
 
+class MyMonitor(xbmc.Monitor):
+	def __init__(self, *args, **kwargs):
+		xbmc.Monitor.__init__(self)
+		self.update_settings = kwargs['update_settings']
+		xbmc_log(xbmc.LOGDEBUG, 'Monitor initalized')
 
-class displayImage():
-	def __init__(self, name, resx, resy, xpos, cx, ypos, cy):
-		self.image = pygame.image.load(name)
-		if resx > 0 or resy > 0:
-			self.image = pygame.transform.scale(self.image, aspect_scale(self.image, (resx, resy)))
+	def onSettingsChanged(self):
+		xbmc_log(xbmc.LOGNOTICE, 'Settings changed, perform update')
+		self.update_settings()
 
-		self.imagepos = self.image.get_rect()
-		if xpos < 0:
-			self.imagepos.x = glob.display_w - self.image.get_width() + xpos
-		else:
-			if cx == 1:
-				self.imagepos.centerx = xpos
-			else:
-				self.imagepos.x = xpos
-		if ypos < 0:
-			self.imagepos.y = glob.display_h - self.image.get_height() + ypos
-		else:
-			if cy == 1:
-				self.imagepos.centerx = ypos
-			else:
-				self.imagepos.y = ypos
+	def onScreensaverDeactivated(self):
+		ScreensaverRunning = False
 
-	def draw(self, surface):
-		surface.blit(self.image, self.imagepos)
+	def onScreensaverActivated(self):
+		ScreensaverRunning = True
 
-
-class displayText():
-	def __init__(self, text, font, size, color, xpos, cx, ypos, cy):
-		self.font = pygame.font.Font(None, size)
-		self.image = self.font.render(text, 1, color)
-		self.textpos = self.image.get_rect()
-
-		if xpos < 0:
-			self.textpos.x = glob.display_w - self.image.get_width() + xpos
-		else:
-			if cx == 1:
-				self.textpos.centerx = xpos
-			else:
-				self.textpos.x = xpos
-
-		if ypos < 0:
-			self.textpos.y = glob.display_h - self.image.get_height() + ypos
-		else:
-			if cy == 1:
-				self.textpos.centery = ypos
-			else:
-				self.textpos.y = ypos
-
-	def draw(self, surface):
-		surface.blit(self.image, self.textpos)
 
 
 
@@ -188,453 +110,158 @@ class TFT():
 		self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 		self.clock = pygame.time.Clock()
 		TFTinfo = pygame.display.Info()
-		glob.display_w = TFTinfo.current_w
-		glob.display_h = TFTinfo.current_h
+		self.display_w = TFTinfo.current_w
+		self.display_h = TFTinfo.current_h
 		self.background = pygame.Surface(self.screen.get_size())
-		self.tftmodes = [None] * TFT_MODE.MAX_MODES
+
+		self.running = True
+		self.distro = distro
+		self.readSettings()
+
+		xbmc_log(xbmc.LOGNOTICE, 'Display Resolution: ' + str(self.display_w) + 'x' + str(self.display_h))
+
+		self.Monitor = MyMonitor(update_settings = self.readSettings)
+		self.run()
 
 
-	def checkFileXML(self):
-		ret = True
-		if not os.path.isfile(__tftxml__):
-			if not os.path.isfile(__tftdefaultxml__):
-				text = __settings__.getLocalizedString(32502)
-				notify(__addonname__, text, 5000, __icon__, xbmc.LOGWARNING)
-				return False
-			else:
-				try:
-					shutil.copy2(__tftdefaultxml__, __tftxml__)
-				except:
-					text = __settings__.getLocalizedString(32503)
-					notify(__addonname__, text, 5000, __icon__, xbmc.LOGWARNING)
-					return False
+	def readSettings(self):
+		xbmc_log(xbmc.LOGNOTICE, 'Reading addon settings')
+		self.fps = int(__addon__.getSetting('fps'))
+		self.navtimeout = int(__addon__.getSetting('navtimeout'))
+		self.displaystartscreen = bool(__addon__.getSetting('displaystartscreen'))
+		self.timestartscreen = int(__addon__.getSetting('startscreentime'))
+		glob.addonDebug = bool(__addon__.getSetting('debug'))
 
-		try:
-			self.doc = xmltree.parse(__tftxml__)
-		except:
-			text = __settings__.getLocalizedString(32504)
-			notify(__addonname__, text, 5000, __icon__, xbmc.LOGWARNING)
-			return False
+		self.wait = round(float(1)/self.fps, 3)
 
-		xbmc_log(xbmc.LOGNOTICE, "Loading settings from %s" % (__tftxml__))
-		return ret
-
-
-
-	def setupArray(self, node, mode):
-		self.tftmodes[mode] = []
-		# begin every list with the background color black
-		# when a background color is set in TFT.xml for the mode, then replace this
-		self.tftmodes[mode].insert(0, 'backgroundToDisplay|#000000')
-
-		text = __settings__.getLocalizedString(32505)
-
-		for child in node:
-			opt = ""
-			sep = ';'
-
-
-
-			if child.tag == 'background':
-				opt = 'backgroundToDisplay|'
-				color = child.find('color')
-				if color is not None:
-					if isColorHex(color.text):  # from helper.py
-						opt = opt + color.text
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><color> %s has not the right format' % (node.tag, child.tag, color.text))
-						return False
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <color> tag' % (node.tag, child.tag))
-					return False
-
-				xbmc_log(xbmc.LOGDEBUG, '<%s><%s> %s' % (node.tag, child.tag, opt))
-				self.tftmodes[mode][0] = opt  # replace default background color
-
-
-
-			elif child.tag == 'text':
-				opt = 'textToDisplay|'
-
-				if child.get('display') is not None:
-					if child.get('display').lower() == '$info[distroname]':
-						opt = opt + glob.distro + sep
-					else:
-						opt = opt + child.attrib['display'] + sep
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing display attribut' % (node.tag, child.tag))
-					return False
-
-				font = child.find('font')
-				if font is not None:
-					if os.path.isfile(os.path.join(__media__, font.text)) or font.text == 'None':
-						opt = opt + font.text + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><font> %s not found' % (node.tag, child.tag, font.text))
-						return False
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <font> tag' % (node.tag, child.tag))
-					return False
-
-				size = child.find('size')
-				if size is not None:
-					if isInteger(size.text):  # from helper.py
-						opt = opt + size.text + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><size> %s is not an integer' % (node.tag, child.tag, size.text))
-						return False
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <size> tag' % (node.tag, child.tag))
-					return False
-
-				color = child.find('color')
-				if color is not None:
-					if isColorHex(color.text):  # from helper.py
-						opt = opt + color.text + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><color> %s has not the right format' % (node.tag, child.tag, color.text))
-						return False
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <color> tag' % (node.tag, child.tag))
-					return False
-
-				xpos = child.find('xpos')
-				if xpos is not None:
-					if isInteger(xpos.text):  # from helper.py
-						opt = opt + xpos.text + sep + '0' + sep
-					elif xpos.text == 'center':
-						cpos = str(glob.display_w/2)
-						opt = opt + cpos + sep + '1' + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><xpos> value %s is not supported' % (node.tag, child.tag, xpos.text))
-						return False
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <xpos> tag' % (node.tag, child.tag))
-					return False
-
-				ypos = child.find('ypos')
-				if ypos is not None:
-					if isInteger(ypos.text):  # from helper.py
-						opt = opt + ypos.text + sep + '0'
-					elif ypos.text == 'center':
-						cpos = str(glob.display_h/2)
-						opt = opt + cpos + sep + '1'
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><ypos> value %s is not supported' % (node.tag, child.tag, ypos.text))
-						return False
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <ypos> tag' % (node.tag, child.tag))
-					return False
-
-				xbmc_log(xbmc.LOGDEBUG, '<%s><%s> %s' % (node.tag, child.tag, opt))
-				self.tftmodes[mode].append(opt)
-
-
-
-			elif child.tag == 'image':
-				opt = 'imageToDisplay|'
-
-				if child.get('path') is not None:
-					if child.get('path').lower() == '$info[distrologo]':
-						imagepath = __media__ + '/' + glob.distro.lower() + '.png'
-						if not os.path.isfile(imagepath):
-							imagepath = __media__ + '/' + 'kodi.png'
-					elif os.path.isfile(child.get('path')):
-						imagepath = child.get('path')
-					elif os.path.isfile(os.path.join(__media__, child.get('path'))):
-						imagepath = __media__ + '/' + child.get('path')
-					else:
-						imagepath = __media__ + '/' + 'error.png'
-					opt = opt + imagepath + sep
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing path attribut' % (node.tag, child.tag))
-					return False
-
-				resx = child.find('resx')
-				if resx is not None:
-					if isInteger(resx.text):  # from helper.py
-						if int(resx.text) < 0:
-							notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-							xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><resx> value can not be %s (negative)' % (node.tag, child.tag, resx.text))
-							return False
-						else:
-							opt = opt + resx.text + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><resx> value %s is not supported' % (node.tag, child.tag, xpos.text))
-						return False
-				else:
-					opt = opt + '0' + sep
-
-				resy = child.find('resy')
-				if resy is not None:
-					if isInteger(resy.text):  # from helper.py
-						if int(resy.text) < 0:
-							notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-							xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><resy> value can not be %s (negative)' % (node.tag, child.tag, resy.text))
-							return False
-						else:
-							opt = opt + resy.text + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><resy> value %s is not supported' % (node.tag, child.tag, xpos.text))
-						return False
-				else:
-					opt = opt + '0' + sep
-
-				xpos = child.find('xpos')
-				if xpos is not None:
-					if isInteger(xpos.text):  # from helper.py
-						opt = opt + xpos.text + sep + '0' + sep
-					elif xpos.text == 'center':
-						cpos = str(glob.display_w/2)
-						opt = opt + cpos + sep + '1' + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><xpos> value %s is not supported' % (node.tag, child.tag, xpos.text))
-						return False
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <xpos> tag' % (node.tag, child.tag))
-					return False
-
-				ypos = child.find('ypos')
-				if ypos is not None:
-					if isInteger(ypos.text):  # from helper.py
-						opt = opt + ypos.text + sep + '0'
-					elif ypos.text == 'center':
-						cpos = str(glob.display_h/2)
-						opt = opt + cpos + sep + '1'
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><ypos> value %s is not supported' % (node.tag, child.tag, ypos.text))
-						return False
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <ypos> tag' % (node.tag, child.tag))
-					return False
-
-				xbmc_log(xbmc.LOGDEBUG, '<%s><%s> %s' % (node.tag, child.tag, opt))
-				self.tftmodes[mode].append(opt)
-
-
-
-			elif child.tag == 'progressbar':
-				opt = 'progressBarToDisplay|'
-
-				width = child.find('width')
-				if width is not None:
-					if isInteger(width.text):  # from helper.py
-						if int(width.text) < 0:
-							notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-							xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><width> value can not be %s (negative)' % (node.tag, child.tag, width.text))
-							return False
-						else:
-							opt = opt + width.text + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><width> value %s is not supported' % (node.tag, child.tag, xpos.text))
-						return False
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <width> tag' % (node.tag, child.tag))
-					return False
-
-				height = child.find('height')
-				if height is not None:
-					if isInteger(height.text):  # from helper.py
-						if int(height.text) < 0:
-							notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-							xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><height> value can not be %s (negative)' % (node.tag, child.tag, height.text))
-							return False
-						else:
-							opt = opt + height.text + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><height> value %s is not supported' % (node.tag, child.tag, height.text))
-						return False
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <height> tag' % (node.tag, child.tag))
-					return False
-
-				color = child.find('barcolor')
-				if color is not None:
-					if isColorHex(color.text):  # from helper.py
-						opt = opt + color.text + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><barcolor> %s has not the right format' % (node.tag, child.tag, color.text))
-						return False
-				else:
-					opt = opt + '#FF0000' + sep
-
-				border = child.find('border')
-				if border is not None:
-					if isInteger(border.text):  # from helper.py
-						if int(border.text) < 0:
-							notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-							xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><border> value can not be %s (negative)' % (node.tag, child.tag, border.text))
-							return False
-						else:
-							opt = opt + border.text + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><border> value %s is not supported' % (node.tag, child.tag, border.text))
-						return False
-				else:
-					opt = opt + '2' + sep
-
-				color = child.find('bordercolor')
-				if color is not None:
-					if isColorHex(color.text):  # from helper.py
-						opt = opt + color.text + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><bordercolor> %s has not the right format' % (node.tag, child.tag, color.text))
-						return False
-				else:
-					opt = opt + '#FFFFFF' + sep
-
-				color = child.find('progresscolor')
-				if color is not None:
-					if isColorHex(color.text):  # from helper.py
-						opt = opt + color.text + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><progresscolor> %s has not the right format' % (node.tag, child.tag, color.text))
-						return False
-				else:
-					opt = opt + '#0000FF' + sep
-
-				xpos = child.find('xpos')
-				if xpos is not None:
-					if isInteger(xpos.text):  # from helper.py
-						opt = opt + xpos.text + sep + '0' + sep
-					elif xpos.text == 'center':
-						cpos = str(glob.display_w/2)
-						opt = opt + cpos + sep + '1' + sep
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><xpos> value %s is not supported' % (node.tag, child.tag, xpos.text))
-						return False
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <xpos> tag' % (node.tag, child.tag))
-					return False
-
-				ypos = child.find('ypos')
-				if ypos is not None:
-					if isInteger(ypos.text):  # from helper.py
-						opt = opt + ypos.text + sep + '0'
-					elif ypos.text == 'center':
-						cpos = str(glob.display_h/2)
-						opt = opt + cpos + sep + '1'
-					else:
-						notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><ypos> value %s is not supported' % (node.tag, child.tag, ypos.text))
-						return False
-				else:
-					notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <ypos> tag' % (node.tag, child.tag))
-					return False
-
-				xbmc_log(xbmc.LOGDEBUG, '<%s><%s> %s' % (node.tag, child.tag, opt))
-				self.tftmodes[mode].append(opt)
-
-
-
-			else:
-				notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-				xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s> the tag <%s> is not supported' % (node.tag, child.tag))
-				return False
-
-
-
-		xbmc_log(xbmc.LOGWARNING, '%s %s' % (mode, self.tftmodes[mode]))
-		return True
-
-	def xmlToArray(self):
-		text = __settings__.getLocalizedString(32503)
-		root = self.doc.getroot()
-
-		for mode in glob.modes:
-			tmpMode = root.find(mode)
-			if tmpMode is not None:
-				tftmode = 'TFT_MODE.' + mode.upper()
-				if not self.setupArray(tmpMode, eval(tftmode)):
-					return False
-			else:
-				notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
-				xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s> tag for the mode is missing' % mode)
-				return False
-
-		return True
+		# setup modeslist
+		self.tftModes = ModesList(self.distro, self.display_w, self.display_h) # from modeslist.py
+		if not self.tftModes.xmlToList():
+			self.running = False
+		self.tftmodeslist = self.tftModes.returnModes()
 
 
 	def backgroundToDisplay(self, color):
-		intcolor = hexToRGB(color)
-		self.background.fill(intcolor)
+		self.background.fill(color)
 
-	def textToDisplay(self, text, font, size, color, xpos, cx, ypos, cy):
-		if text.lower().find("$info") >= 0:
-			text = xbmc.getInfoLabel(text).decode('utf-8')
-		intcolor = hexToRGB(color)
-		t = displayText(text, font, int(size), intcolor, int(xpos), int(cx), int(ypos), int(cy))
-		t.draw(self.background)
 
-	def imageToDisplay(self, name, resx, resy, xpos, cx, ypos, cy):
-		i = displayImage(name, int(resx), int(resy), int(xpos), int(cx), int(ypos), int(cy))
-		i.draw(self.background)
+	def textToDisplay(self, text, condition, font, size, color, xpos, cx, ypos, cy):
+		if xbmc.getCondVisibility(condition) or condition == 'visible':
+#			xbmc_log(xbmc.LOGNOTICE, 'Text vor: %s' % text)
+			if text.lower().find('$info') >= 0:
+				text = xbmc.getInfoLabel(text)
+#				xbmc_log(xbmc.LOGNOTICE, 'Text nach1: %s' % text)
 
-	def progressBarToDisplay(self, width, heigth, bkcolor, border, bordercolor, barcolor, xpos, cx, ypos, cy):
-		p = displayProgressBar(int(width), int(heigth), bkcolor, int(border), bordercolor, barcolor, int(xpos), int(cx), int(ypos), int(cy))
-		p.draw(self.background)
+#				text = xbmc.getInfoLabel(text).encode('utf-8', 'ignore')
+#				xbmc_log(xbmc.LOGNOTICE, 'Text nach2: %s' % text)
 
+			if font == 'None':
+				self.font = pygame.font.Font(None, size)
+			else:
+				self.font = pygame.font.Font(font, size)
+			self.image = self.font.render(text, 1, color)
+			self.textpos = self.image.get_rect()
+
+			if cx == 0:
+				if int(xpos) < 0:
+					self.textpos.x = self.display_w - self.image.get_width() + xpos
+				else:
+					self.textpos.x = int(xpos)
+			else:
+				self.textpos.centerx = xpos
+
+			if cy == 0:
+				if int(ypos) < 0:
+					self.textpos.y = self.display_h - self.image.get_height() + ypos
+				else:
+					self.textpos.y = int(ypos)
+			else:
+				self.textpos.centery = ypos
+
+			self.background.blit(self.image, self.textpos)
+
+
+	def imageToDisplay(self, imgpath, condition, resx, resy, xpos, cx, ypos, cy):
+		if xbmc.getCondVisibility(condition) or condition == 'visible':
+			self.image = pygame.image.load(imgpath)
+			if resx > 0 and resy > 0:
+				self.image = pygame.transform.scale(self.image, aspect_scale(self.image, (int(resx), int(resy))))
+			self.imagepos = self.image.get_rect()
+
+			if cx == 0:
+				if xpos < 0:
+					self.imagepos.x = self.display_w - self.image.get_width() + xpos
+				else:
+					self.imagepos.x = xpos
+			else:
+				self.imagepos.centerx = xpos
+
+			if cy == 0:
+				if ypos < 0:
+					self.imagepos.y = self.display_h - self.image.get_height() + ypos
+				else:
+					self.imagepos.y = ypos
+			else:
+				self.imagepos.centery = ypos
+
+			self.background.blit(self.image, self.imagepos)
+
+
+	def progressBarToDisplay(self, width, height, barcolor, progresscolor, border, bordercolor, xpos, cx, ypos, cy):
+		progbar = pygame.Rect(0, 0, width, height)
+
+		if cx == 0:
+			if xpos < 0:
+				progbar.x = self.display_w - width + xpos
+			else:
+				progbar.x = xpos
+		else:
+			progbar.centerx = xpos
+
+		if cy == 0:
+			if ypos < 0:
+				progbar.y = self.display_h - height + ypos
+			else:
+				progbar.y = ypos
+		else:
+			progbar.centery = ypos
+
+		# timeToSecs from helper.py
+		playtime = timeToSecs(xbmc.getInfoLabel("Player.Time(hh:mm:ss)"))
+		duration = timeToSecs(xbmc.getInfoLabel("Player.Duration(hh:mm:ss)"))
+
+		if playtime > 0:
+			percent = int(( 1. * progbar.width / duration ) * playtime)
+		else:
+			percent = 0
+
+		progbar_done = pygame.Rect(progbar)
+		progbar_done.width = percent
+		pygame.draw.rect(self.background, barcolor, progbar )
+		pygame.draw.rect(self.background, progresscolor, progbar_done )
+		if border > 0:
+			pygame.draw.rect(self.background, bordercolor, progbar, border)
 
 	def drawToDisplay(self, mode):
-		for i in range(0, len(self.tftmodes[mode])):
-			func, values = self.tftmodes[mode][i].split('|')
-			values = values.split(';')
-#			xbmc_log(xbmc.LOGNOTICE, str(func) + '   ' + str(values))
-#			time.sleep(1)
+		for i in range(0, len(self.tftmodeslist[mode])):
+			func = self.tftmodeslist[mode][i][0]
+			values = self.tftmodeslist[mode][i][1:]
 			getattr(self, func)(*values)
 
 
-	def run(self):
-		running = True
-		xbmc_log(xbmc.LOGNOTICE, 'Display Resolution: ' + str(glob.display_w) + 'x' + str(glob.display_h))
 
-		if self.checkFileXML():
-			if self.xmlToArray():
-				self.drawToDisplay(TFT_MODE.STARTSCREEN)
-				# Blit everything to the screen
-				self.screen.blit(self.background, (0, 0))
-				pygame.display.flip()
-				time.sleep(3)
-			else:
-				running = False
-		else:
-			running = False
+	def run(self):
+
+		if self.running and self.displaystartscreen:
+			self.drawToDisplay(TFT_MODE.STARTSCREEN)
+			self.screen.blit(self.background, (0, 0))
+			pygame.display.flip()
+			time.sleep(self.timestartscreen)
 
 		# Event loop
-		while (not xbmc.abortRequested) and running:
+		while self.running and not xbmc.abortRequested:
 
-			if isNavigation():
+			if isNavigation(self.navtimeout):
 				mode = TFT_MODE.NAVIGATION
 			elif xbmc.getCondVisibility('Player.HasVideo'):
 				mode = TFT_MODE.VIDEO
@@ -645,16 +272,22 @@ class TFT():
 			else:
 				mode = TFT_MODE.GENERAL
 
+			xbmc_log(xbmc.LOGDEBUG, 'Drawing layout for mode %s' % mode)
+
 			self.drawToDisplay(mode)
-			# Blit everything to the screen
 			self.screen.blit(self.background, (0, 0))
 			pygame.display.flip()
 
-			self.clock.tick(5)
+#			self.clock.tick(self.fps)
+			while self.Monitor.waitForAbort(self.wait):
+				running = False
 
-		pygame.quit()
-		xbmc_log(xbmc.LOGNOTICE, 'Closing')
-		sys.exit()
+		del self.Monitor
+
 
 if (__name__ == "__main__"):
-	TFT().run()
+	xbmc_log(xbmc.LOGNOTICE, 'Starting')
+	TFT()
+	xbmc_log(xbmc.LOGNOTICE, 'Closing')
+	pygame.quit()
+	sys.exit(0)

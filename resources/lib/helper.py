@@ -1,8 +1,11 @@
 import os
 import xbmc
+import string
 import traceback
 import subprocess
 import ConfigParser
+import config as glob
+
 
 
 # from http://stackoverflow.com/questions/1265665/python-check-if-a-string-represents-an-int-without-using-try-except
@@ -12,10 +15,13 @@ def isInteger(v):
 
 
 
-
 def timeToSecs(time):
 	t = time.split(':')
+	if t == '':
+		return 0
+
 	return int(t[0]) * 3600 + int(t[1]) * 60 + int(t[2])
+
 
 
 def isColorHex(value):
@@ -32,12 +38,12 @@ def isColorHex(value):
 
 	return True
 
-
-# found somewhere, but i don't remember where (stackoverflow?)
+# from http://stackoverflow.com/questions/4296249/how-do-i-convert-a-hex-triplet-to-an-rgb-tuple-and-back
 def hexToRGB(value):
 	value = value.lstrip('#')
 	lv = len(value)
-	return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+	return tuple(int(value[i:i+lv/3], 16) for i in range(0, lv, lv/3))
+
 
 
 
@@ -115,7 +121,7 @@ def getDistroName():
 
 
 def xbmc_log(level, text):
-	if level == 0 and os.environ.get('DEBUG', 'no') == 'no':
+	if level == 0 and not glob.addonDebug:
 		return
 	xbmc.log('# KoDisplay -- ' + text, level)
 	if level == 4:
