@@ -1,5 +1,7 @@
 # script.kodisplay
 
-Dependencies: pygame
+Dependencies: pygame, SDL and RPi.GPIO
 
 # WIP
+
+

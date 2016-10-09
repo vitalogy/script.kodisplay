@@ -1,20 +1,32 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
 
-  <!--Common-->
-  <string id="32100">Common</string>
+  <!--General-->
+  <string id="32100">General</string>
   <string id="32101">Frames per second (FPS)</string>
   <string id="32102">Display Startscreen</string>
   <string id="32103">Startscreen display duration (s)</string>
   <string id="32104">Navigation display duration (s)</string>
+  <string id="32104">Scrollspeed</string>
+
+  <!--Backlight-->
+  <string id="32200">Backlight</string>
+  <string id="32301">Active dim</string>
+  <string id="32302">BCM GPIO</string>
+  <string id="32303">Dim on screensaver</string> 
+  <string id="32304">Dimmer value</string>
 
   <!--Debug-->
-  <string id="32200">Debug</string>
-  <string id="32201">Enable debug for this addon</string>
+  <string id="32300">Debug</string>
+  <string id="32301">Enable debug</string>
 
-  <!--Notifications-->
-  <string id="32500">Loading SDL failed!</string>
-  <string id="32501">Importing pygame failed!</string>
+  <!--LibreELEC Notification-->
+  <string id="32400">SDL does not exist</string>
+  <string id="32401">Loading SDL failed!</string>
+
+  <!--Common Notifications-->
+  <string id="32500">Importing pygame failed!</string>
+  <string id="32501">Importung RPi.GPIO failed!</string>
   <string id="32502">No TFT.xml found and TFT.xml.defaults missing!</string>
   <string id="32503">Failed to copy TFT.xml.defaults to TFT.xml!</string>
   <string id="32504">Parsing of TFT.xml failed!</string>

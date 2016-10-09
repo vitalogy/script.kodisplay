@@ -1,10 +1,12 @@
 import os
 import xbmc
+import time
 import string
 import traceback
 import subprocess
 import ConfigParser
 import config as glob
+
 
 
 
@@ -15,12 +17,19 @@ def isInteger(v):
 
 
 
+
 def timeToSecs(time):
 	t = time.split(':')
 	if t == '':
 		return 0
 
-	return int(t[0]) * 3600 + int(t[1]) * 60 + int(t[2])
+	try:
+		ret = int(t[0]) * 3600 + int(t[1]) * 60 + int(t[2])
+	except:
+		ret = 0
+
+	return ret
+
 
 
 
@@ -77,19 +86,20 @@ def aspect_scale(img,(bx,by)):
 
 
 
-class FakeSecHead(object):
-    def __init__(self, fp):
-        self.fp = fp
-        self.sechead = '[section]\n'
 
-    def readline(self):
-        if self.sechead:
-            try:
-                return self.sechead
-            finally:
-                self.sechead = None
-        else:
-            return self.fp.readline()
+class FakeSecHead(object):
+	def __init__(self, fp):
+		self.fp = fp
+		self.sechead = '[section]\n'
+
+	def readline(self):
+		if self.sechead:
+			try:
+				return self.sechead
+			finally:
+				self.sechead = None
+		else:
+			return self.fp.readline()
 
 def getDistroName():
 	parser = ConfigParser.SafeConfigParser()
@@ -103,34 +113,52 @@ def getDistroName():
 
 
 
+
+def isNavigation(navtimeout):
+	ret = False
+
+	menu = xbmc.getInfoLabel('$INFO[System.CurrentWindow]')
+	subMenu = xbmc.getInfoLabel('$INFO[System.CurrentControl]')
+
+	if menu != glob.oldMenu or subMenu != glob.oldSubMenu or (glob.navTimer + navtimeout) > time.time():
+		ret = True
+	if menu != glob.oldMenu or subMenu != glob.oldSubMenu:
+		glob.navTimer = time.time()
+	glob.oldMenu = menu
+	glob.oldSubMenu = subMenu
+
+	return ret
+
+
+
+
 """ https://github.com/LibreELEC/service.libreelec.settings
-    taken from oe.py and modified
+   	taken from oe.py and modified
        Copyright (C) 2009-2013 Stephan Raue (stephan@openelec.tv)
-       Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
+   	   Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
 
-
-#	xbmc.LOGDEBUG   = 0
-#	xbmc.LOGINFO    = 1
-#	xbmc.LOGNOTICE  = 2
-#	xbmc.LOGWARNING = 3
-#	xbmc.LOGERROR   = 4
-#	xbmc.LOGSEVERE  = 5
-#	xbmc.LOGFATAL   = 6
-#	xbmc.LOGNONE    = 7
+	xbmc.LOGDEBUG   = 0
+	xbmc.LOGINFO    = 1
+	xbmc.LOGNOTICE  = 2
+	xbmc.LOGWARNING = 3
+	xbmc.LOGERROR   = 4
+	xbmc.LOGSEVERE  = 5
+	xbmc.LOGFATAL   = 6
+	xbmc.LOGNONE    = 7
 """
 
-
 def xbmc_log(level, text):
-	if level == 0 and not glob.addonDebug:
-		return
-	xbmc.log('# KoDisplay -- ' + text, level)
+	if glob.addonDebug and level == 0:
+		xbmc.log('# KoDisplay [DEBUG] -- ' + text, 2)
+	else:
+		xbmc.log('# KoDisplay -- ' + text, level)
+
 	if level == 4:
 		xbmc.log(traceback.format_exc(), level)
 
-
 def notify(title, message, time, icon, level=0):
 	try:
-		xbmc_log(level, message)
+		#xbmc_log(level, message)
 		msg = 'Notification("%s", "%s", %d, "%s")' % (
 			title,
 			message[0:64],
@@ -140,6 +168,7 @@ def notify(title, message, time, icon, level=0):
 		xbmc.executebuiltin(msg)
 	except Exception, e:
 		xbmc_log(xbmc.LOGERROR, 'Notification ERROR: (' + repr(e) + ')')
+
 
 
 def execute(command_line, get_result=0):
@@ -158,4 +187,8 @@ def execute(command_line, get_result=0):
 		xbmc_log(xbmc.LOGDEBUG, 'executed command has been finshed successfully')
 	except Exception, e:
 		xbmc_log(xbmc.LOGERROR, 'executed command :: ' + command_line + ' :: with ERROR: (' + repr(e) + ')')
+
+
+
+
 

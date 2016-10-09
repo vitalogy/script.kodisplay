@@ -1,4 +1,3 @@
-distro = ''
 oldMenu = ''
 oldSubMenu = ''
 navTimer = 0

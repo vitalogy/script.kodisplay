@@ -4,9 +4,16 @@
     <setting id="fps" type="slider" label="32101" option="int" default="5" range="1,30" />
     <setting id="displaystartscreen" type="bool" label="32102" default="true" />
     <setting id="startscreentime" enable="eq(-1,true)" type="slider" label="32103" option="int" default="3" range="1,10" />
-    <setting id="navtimeout" type="slider" label="32104" option="int" default="4" range="1,10" />
+    <setting id="navtimeout" type="slider" label="32104" option="int" default="4" range="1,20" />
+    <setting id="scrollspeed" type="slider" label="32105" option="int" default="4" range="1,20" />
   </category>
   <category label="32200">
-    <setting id="enabledebug" type="bool" label="32201" default="false" />
+    <setting id="dimactive" type="bool" label="32201" default="false" />
+    <setting id="backlightgpio" enable="eq(-1,true)" type="number" label="32202" option="int" default="23" />
+    <setting id="dimonscreensaver" enable="eq(-2,true)" type="bool" label="32203" default="false" subsetting="true" />
+    <setting id="dimmervalue" enable="eq(-3,true)" type="slider" label="32204" option="int" default="50" range="5,5,100" subsetting="true" />
+  </category>
+  <category label="32300">
+    <setting id="addondebug" type="bool" label="32301" default="false" />
   </category>
 </settings>

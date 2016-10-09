@@ -4,9 +4,6 @@ import time
 import xbmc
 import xbmcaddon
 import xbmcgui
-#import string
-
-from ctypes import *
 
 
 __addon__         = xbmcaddon.Addon()
@@ -22,62 +19,87 @@ BASE_RESOURCE_PATH = xbmc.translatePath(__lib__)
 sys.path.insert(0, BASE_RESOURCE_PATH)
 
 from helper import *
-from currentmode import *
+from modes import *
 from modeslist import ModesList
 import config as glob
 
 glob.navTimer = time.time()
-
-os.environ["SDL_VIDEODRIVER"] = "fbcon"
-os.environ["SDL_FBDEV"] = "/dev/fb1"
-
 distro = getDistroName() # from helper.py
 xbmc_log(xbmc.LOGNOTICE, 'Version %s running on %s' %(__addonversion__, distro))
 
 if distro == 'LibreELEC':
 	# running on LibreELEC
-	#  1.   check for existing lib.tgz (lib.tgz includes SDL-1.2 & pygame)
-	#  1.1.   if the directories SDL and pygame exist, delete them
-	#  1.2.   unpack lib.tgz, then move it to lib.tgz.x
+	#  1.   check for existing lib.tgz (lib.tgz includes SDL, pygame & RPi.GPIO)
+	#  1.1.	if the directories SDL, pygame or RPi.GPIO exist, delete them
+	#  1.2.	unpack lib.tgz, then move it to lib.tgz.x
 	#  2.   load the needed shared libraries
 
-	__libtgz__ = os.path.join(__lib__, 'lib.tgz')
+
+	libtgz = 'lib.tgz'
+	__libtgz__ = os.path.join(__lib__, 'libreelec', libtgz)
 	if os.path.exists(__libtgz__):
-		xbmc_log(xbmc.LOGNOTICE, 'Will extracting needed libs from lib.tgz')
-		# remove the directories SDL and pygame if they exist
+		xbmc_log(xbmc.LOGNOTICE, 'Will extracting needed libs from %s' % libtgz)
+		# remove the directories SDL, pygame and RPi if they exist
 		if os.path.isdir(os.path.join(__lib__, 'SDL')):
-			xbmc_log(xbmc.LOGWARNING, 'Directory SDL exist, so remove it')
 			execute('rm -rf ' + __lib__ + '/' + 'SDL')
 		if os.path.isdir(os.path.join(__lib__, 'pygame')):
-			xbmc_log(xbmc.LOGWARNING, 'Directory pygame exist, so remove it')
 			execute('rm -rf ' + __lib__ + '/' + 'pygame')
+		if os.path.isdir(os.path.join(__lib__, 'RPi')):
+			execute('rm -rf ' + __lib__ + '/' + 'RPi')
 
 		try:
 			execute('tar xf ' + __libtgz__ + ' -C ' + __lib__)
 			execute('mv ' + __libtgz__ + ' ' + __libtgz__ + '.x')
-			xbmc_log(xbmc.LOGNOTICE, 'Extracting libs from lib.tgz was successfully')
+			xbmc_log(xbmc.LOGNOTICE, 'Extracting needed libs was successfully.')
 		except:
-			xbmc_log(xbmc.LOGWARNING, 'Extracting libs from lib.tgz goes wrong')
+			xbmc_log(xbmc.LOGWARNING, 'Extracting libs from %s goes wrong!' % libtgz)
 			sys.exit(1)
+
+
+	if not os.path.exists(os.path.join(__lib__, 'SDL', 'libSDL.so')):
+		text = __addon__.getLocalizedString(32400)
+		notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
+		xbmc_log(xbmc.LOGWARNING, 'Needed lib SDL is missing!')
+		if not os.path.exists(__libtgz__):
+			xbmc_log(xbmc.LOGWARNING, 'Missing %s to extract the needed libs from!' % libtgz)
+		sys.exit(1)
+
+
+	from ctypes import *
 
 	try:
 		cdll.LoadLibrary(os.path.join(__lib__, 'SDL', 'libSDL.so'))
 		cdll.LoadLibrary(os.path.join(__lib__, 'SDL', 'libSDL_image.so'))
 		cdll.LoadLibrary(os.path.join(__lib__, 'SDL', 'libSDL_ttf.so'))
 	except:
-		text = __addon__.getLocalizedString(32500)
+		text = __addon__.getLocalizedString(32401)
 		notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
+		xbmc_log(xbmc.LOGWARNING, 'Loading the lib SDL failed!')
 		sys.exit(1)
 
 
+# import pygame
+os.environ["SDL_VIDEODRIVER"] = "fbcon"
+os.environ["SDL_FBDEV"] = "/dev/fb1"
 try:
 	import pygame
 	from pygame.locals import *
 except:
-	text = __addon__.getLocalizedString(32501)
+	text = __addon__.getLocalizedString(32500)
 	notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
+	xbmc_log(xbmc.LOGWARNING, 'Importing pygame failed!')
 	sys.exit(1)
 
+# import RPi.GPIO
+try:
+	import RPi.GPIO as GPIO
+	GPIO.setwarnings(False)
+	GPIO.setmode(GPIO.BCM)
+except:
+	text = __addon__.getLocalizedString(32501)
+	notify(__addonname__, text, 10000, __icon__, xbmc.LOGWARNING)
+	xbmc_log(xbmc.LOGWARNING, 'Importing RPi.GPIO failed!')
+	sys.exit(1)
 
 
 
@@ -92,11 +114,11 @@ class MyMonitor(xbmc.Monitor):
 		xbmc_log(xbmc.LOGNOTICE, 'Settings changed, perform update')
 		self.update_settings()
 
-	def onScreensaverDeactivated(self):
-		ScreensaverRunning = False
+#	def onScreensaverDeactivated(self):
+#		ScreensaverRunning = False
 
-	def onScreensaverActivated(self):
-		ScreensaverRunning = True
+#	def onScreensaverActivated(self):
+#		ScreensaverRunning = True
 
 
 
@@ -112,99 +134,147 @@ class TFT():
 		TFTinfo = pygame.display.Info()
 		self.display_w = TFTinfo.current_w
 		self.display_h = TFTinfo.current_h
-		self.background = pygame.Surface(self.screen.get_size())
+		self.background = pygame.Surface(self.screen.get_size()).convert()
 
-		self.running = True
+		self.dimmerisactive = False
 		self.distro = distro
-		self.readSettings()
-
 		xbmc_log(xbmc.LOGNOTICE, 'Display Resolution: ' + str(self.display_w) + 'x' + str(self.display_h))
 
-		self.Monitor = MyMonitor(update_settings = self.readSettings)
-		self.run()
+		self.tftModes = ModesList(self.distro, self.display_w, self.display_h, pygame)
+
+		if self.readSettings():
+			self.run()
+
+
+
 
 
 	def readSettings(self):
-		xbmc_log(xbmc.LOGNOTICE, 'Reading addon settings')
-		self.fps = int(__addon__.getSetting('fps'))
-		self.navtimeout = int(__addon__.getSetting('navtimeout'))
-		self.displaystartscreen = bool(__addon__.getSetting('displaystartscreen'))
-		self.timestartscreen = int(__addon__.getSetting('startscreentime'))
-		glob.addonDebug = bool(__addon__.getSetting('debug'))
+		try:
+			self.fps = int(__addon__.getSetting('fps'))
+			self.navtimeout = int(__addon__.getSetting('navtimeout'))
+			self.displaystartscreen = True if __addon__.getSetting('displaystartscreen') == 'true' else False
+			self.startscreentime = int(__addon__.getSetting('startscreentime'))
+			self.scrollspeed = int(__addon__.getSetting('scrollspeed'))
+			self.dimactivated = True if __addon__.getSetting('dimactive') == 'true' else False
+			self.backlightgpio = int(__addon__.getSetting('backlightgpio'))
+			self.dimonscreensaver = True if __addon__.getSetting('dimonscreensaver') == 'true' else False
+			self.dimmervalue = int(__addon__.getSetting('dimmervalue'))
+			glob.addonDebug = True if __addon__.getSetting('addondebug') == 'true' else False
+			xbmc_log(xbmc.LOGNOTICE, 'Loaded addon settings successfully')
+		except:
+			xbmc_log(xbmc.LOGNOTICE, 'Failure by loading the addon settings')
+			return False
 
-		self.wait = round(float(1)/self.fps, 3)
+		if self.dimactivated:
+			GPIO.setup(self.backlightgpio, GPIO.OUT)
+			self.pwm = GPIO.PWM(self.backlightgpio, 1000)
+			self.pwm.start(100)
+#			self.pwm.ChangeDutyCycle(100)
+			self.dimmerisactive = True
+		else:
+			self.dimmerisactive = False
 
-		# setup modeslist
-		self.tftModes = ModesList(self.distro, self.display_w, self.display_h) # from modeslist.py
 		if not self.tftModes.xmlToList():
-			self.running = False
+			return False
+
 		self.tftmodeslist = self.tftModes.returnModes()
 
+		# create list for holding scroll information
+		# if the width of rendered image greater then display width, put the scroll infos in this list
+		self.scrolllist = [[[1 for k in range(0, 2)] for j in range(0, len(self.tftmodeslist[i]))] for i in range(0, len(self.tftmodeslist))]
 
-	def backgroundToDisplay(self, color):
-		self.background.fill(color)
+		return True
 
 
-	def textToDisplay(self, text, condition, font, size, color, xpos, cx, ypos, cy):
-		if xbmc.getCondVisibility(condition) or condition == 'visible':
-#			xbmc_log(xbmc.LOGNOTICE, 'Text vor: %s' % text)
+
+
+	def backgroundToDisplay(self, background):
+		self.background.blit(background, (0, 0))
+
+
+	def textToDisplay(self, text, condition, scrollmode, txtfont, size, color, xpos, cx, ypos, cy, mode, index):
+		infolabeltime = 0
+		rendertime = 0
+		starttime = time.time()
+		if condition == 'visible' or xbmc.getCondVisibility(condition):
 			if text.lower().find('$info') >= 0:
 				text = xbmc.getInfoLabel(text)
-#				xbmc_log(xbmc.LOGNOTICE, 'Text nach1: %s' % text)
 
-#				text = xbmc.getInfoLabel(text).encode('utf-8', 'ignore')
-#				xbmc_log(xbmc.LOGNOTICE, 'Text nach2: %s' % text)
+				infolabeltime = time.time() - starttime
 
-			if font == 'None':
-				self.font = pygame.font.Font(None, size)
+				# remove special character from infolabel text
+				for char in '()[]{}*':
+					text = text.replace(char,'')
+				text = text.strip().decode('utf-8', 'ignore')
+
+			if txtfont == 'none':
+				font = pygame.font.Font(None, size)
 			else:
-				self.font = pygame.font.Font(font, size)
-			self.image = self.font.render(text, 1, color)
-			self.textpos = self.image.get_rect()
+				font = pygame.font.Font(txtfont, size)
+			textimage = font.render(text, 1, color)
+			textimage = textimage.convert_alpha()
 
-			if cx == 0:
-				if int(xpos) < 0:
-					self.textpos.x = self.display_w - self.image.get_width() + xpos
+			rendertime = time.time() - starttime - infolabeltime
+
+			if (cx == 1 and textimage.get_width() > self.display_w + 20) or \
+				(cx == 0 and textimage.get_width() > (self.display_w - abs(xpos) + 10)):
+				if cx == 1:
+					xpos = 0
+				max_width = self.display_w - abs(xpos)
+				dx = self.scrolllist[mode][index][1]
+				scroll = dx * self.scrollspeed
+
+				if (self.scrolllist[mode][index][0] + scroll) > (textimage.get_width() - max_width):
+					self.scrolllist[mode][index][0] = textimage.get_width() - max_width
+					dx *= -1  # change direction
+				elif self.scrolllist[mode][index][0] + scroll < 0:
+					self.scrolllist[mode][index][0] = 0
+					dx *= -1  # change direction
 				else:
-					self.textpos.x = int(xpos)
-			else:
-				self.textpos.centerx = xpos
+					self.scrolllist[mode][index][0] += scroll
 
-			if cy == 0:
-				if int(ypos) < 0:
-					self.textpos.y = self.display_h - self.image.get_height() + ypos
+				self.scrolllist[mode][index][1] = dx
+
+				location = (self.scrolllist[mode][index][0], 0)
+				size = (max_width, textimage.get_height())
+				textimage = textimage.subsurface(pygame.Rect(location, size))
+				textpos = textimage.get_rect()
+
+#				xbmc_log(xbmc.LOGNOTICE, 'max_width:%s\tlocation:%s\tsize:%s' % (str(max_width), str(location), str(size)))
+
+				if cx == 0:
+					if xpos < 0:
+						textpos.x = self.display_w - textimage.get_width() + xpos
+					else:
+						textpos.x = xpos
 				else:
-					self.textpos.y = int(ypos)
+					textpos.x = 0
 			else:
-				self.textpos.centery = ypos
-
-			self.background.blit(self.image, self.textpos)
-
-
-	def imageToDisplay(self, imgpath, condition, resx, resy, xpos, cx, ypos, cy):
-		if xbmc.getCondVisibility(condition) or condition == 'visible':
-			self.image = pygame.image.load(imgpath)
-			if resx > 0 and resy > 0:
-				self.image = pygame.transform.scale(self.image, aspect_scale(self.image, (int(resx), int(resy))))
-			self.imagepos = self.image.get_rect()
-
-			if cx == 0:
-				if xpos < 0:
-					self.imagepos.x = self.display_w - self.image.get_width() + xpos
+				textpos = textimage.get_rect()
+				if cx == 0:
+					if xpos < 0:
+						textpos.x = self.display_w - textimage.get_width() + xpos
+					else:
+						textpos.x = xpos
 				else:
-					self.imagepos.x = xpos
-			else:
-				self.imagepos.centerx = xpos
+					textpos.centerx = xpos
 
 			if cy == 0:
 				if ypos < 0:
-					self.imagepos.y = self.display_h - self.image.get_height() + ypos
+					textpos.y = self.display_h - textimage.get_height() + ypos
 				else:
-					self.imagepos.y = ypos
+					textpos.y = ypos
 			else:
-				self.imagepos.centery = ypos
+				textpos.centery = ypos
 
-			self.background.blit(self.image, self.imagepos)
+			self.background.blit(textimage, textpos)
+		xbmc_log(xbmc.LOGDEBUG, '\tinfolabel:%s\trender:%s' % (str(infolabeltime), str(rendertime)))
+
+
+	def imageToDisplay(self, image, imagepos, condition):
+		if condition == 'visible' or xbmc.getCondVisibility(condition):
+			self.background.blit(image, imagepos)
 
 
 	def progressBarToDisplay(self, width, height, barcolor, progresscolor, border, bordercolor, xpos, cx, ypos, cy):
@@ -246,23 +316,60 @@ class TFT():
 		for i in range(0, len(self.tftmodeslist[mode])):
 			func = self.tftmodeslist[mode][i][0]
 			values = self.tftmodeslist[mode][i][1:]
+			if func == 'textToDisplay':
+				values.extend([mode, i])
+			if glob.addonDebug:
+				xbmc_log(xbmc.LOGDEBUG, '%s' % func)
+				starttime = time.time()
 			getattr(self, func)(*values)
+			if glob.addonDebug:
+				runfunctime = time.time() - starttime
+				xbmc_log(xbmc.LOGDEBUG, '\tneeded:%s' % str(runfunctime))
+
+
+
+
+	def backlightControl(self, mode):
+		if mode == TFT_MODE.SCREENSAVER:
+			if self.dimonscreensaver:
+				self.pwm.ChangeDutyCycle(self.dimmervalue)
+		else:
+			self.pwm.ChangeDutyCycle(100)
 
 
 
 	def run(self):
 
-		if self.running and self.displaystartscreen:
-			self.drawToDisplay(TFT_MODE.STARTSCREEN)
+		starttime = 0
+		gotmode = 0
+		drawtodisplay = 0
+		screenblit = 0
+		screenflip = 0
+		wholetime = 0
+
+		monitor = MyMonitor(update_settings = self.readSettings)
+
+		mode = TFT_MODE.STARTSCREEN
+		if self.displaystartscreen:
+			self.drawToDisplay(mode)
 			self.screen.blit(self.background, (0, 0))
 			pygame.display.flip()
-			time.sleep(self.timestartscreen)
+			xbmc.sleep(self.startscreentime * 1000)
 
-		# Event loop
-		while self.running and not xbmc.abortRequested:
+		# run the event loop
+		while not monitor.abortRequested():
+
+			if glob.addonDebug:
+				xbmc_log(xbmc.LOGDEBUG, 'NEW FRAME')
+				starttime = time.time()
+
+			if self.dimmerisactive:
+				self.backlightControl(mode)
 
 			if isNavigation(self.navtimeout):
 				mode = TFT_MODE.NAVIGATION
+			elif xbmc.getCondVisibility('Player.HasVideo') and len(xbmc.getInfoLabel("VideoPlayer.TVShowTitle")):
+				mode = TFT_MODE.TVSHOW
 			elif xbmc.getCondVisibility('Player.HasVideo'):
 				mode = TFT_MODE.VIDEO
 			elif xbmc.getCondVisibility('Player.HasAudio'):
@@ -272,22 +379,36 @@ class TFT():
 			else:
 				mode = TFT_MODE.GENERAL
 
-			xbmc_log(xbmc.LOGDEBUG, 'Drawing layout for mode %s' % mode)
+			if glob.addonDebug:
+				gotmode = time.time() - starttime
 
 			self.drawToDisplay(mode)
+			if glob.addonDebug:
+				drawtodisplay = time.time() - starttime - gotmode
+
 			self.screen.blit(self.background, (0, 0))
+			if glob.addonDebug:
+				screenblit = time.time() - starttime - drawtodisplay - gotmode
+
 			pygame.display.flip()
+			if glob.addonDebug:
+				screenflip = time.time() - starttime - screenblit - drawtodisplay - gotmode
 
-#			self.clock.tick(self.fps)
-			while self.Monitor.waitForAbort(self.wait):
-				running = False
+			self.clock.tick(self.fps)
 
-		del self.Monitor
+			if monitor.waitForAbort(0.00001):
+				break
 
+			if glob.addonDebug:
+				wholetime = time.time() - starttime
+				xbmc_log(xbmc.LOGDEBUG, 'gotmode:%s\tdrawtodisplay:%s\tscreenblit:%s\tscreenflip:%s\twholetime:%s' % (str(gotmode), str(drawtodisplay), str(screenblit), str(screenflip), str(wholetime)))
 
 if (__name__ == "__main__"):
 	xbmc_log(xbmc.LOGNOTICE, 'Starting')
 	TFT()
 	xbmc_log(xbmc.LOGNOTICE, 'Closing')
 	pygame.quit()
+	self.pwm.stop()
+	GPIO.cleanup()
 	sys.exit(0)
+

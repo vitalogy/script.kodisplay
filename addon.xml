@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.kodisplay" name="KoDisplay" version="0.0.7" provider-name="MichaeL (vitalogy)">
+<addon id="script.kodisplay" name="KoDisplay" version="0.1.0" provider-name="MichaeL (vitalogy)">
   <requires>
     <import addon="xbmc.python" version="2.19.0"/>
   </requires>
-  <extension point="xbmc.service" library="tftmain.py" start="login">
+  <extension point="xbmc.service" library="tftmain.py" start="startup">
     <provides></provides>
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary>KoDisplay</summary>
-      <description>KoDisplay (Kodi Display)</description>
-      <description lang="de">KoDisplay (Kodi Display)</description>
-    <disclaimer></disclaimer>
+    <description>KoDisplay (Kodi Display) works only with RPi and is written for displays driven by fbtft. You can find the code at https://github.com/vitalogy/script.kodisplay</description>
+    <disclaimer>No liability taken for damaged hardware and/or software caused by this addon.</disclaimer>
     <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
     <platform>linux</platform>
   </extension>
