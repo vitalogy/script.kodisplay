@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.kodisplay" name="KoDisplay" version="0.1.0" provider-name="MichaeL (vitalogy)">
+<addon id="script.kodisplay" name="KoDisplay" version="0.1.1" provider-name="vitalogy">
   <requires>
     <import addon="xbmc.python" version="2.19.0"/>
   </requires>
@@ -8,8 +8,9 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary>KoDisplay</summary>
-    <description>KoDisplay (Kodi Display) works only with RPi and is written for displays driven by fbtft. You can find the code at https://github.com/vitalogy/script.kodisplay</description>
+    <description>KoDisplay (Kodi Display) is written for the Raspberry and connected displays driven by fbtft. You can find the code at https://github.com/vitalogy/script.kodisplay. The following libraries must be installed to get this addon to work: pygame, SDL-1.2, SDL-image, SDL-ttf, RPi.GPIO.</description>
     <disclaimer>No liability taken for damaged hardware and/or software caused by this addon.</disclaimer>
+    <disclaimer lang="de">Keine Haftung für durch dieses Addon beschädigte Hardware und/oder Software.</disclaimer>
     <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
     <platform>linux</platform>
   </extension>

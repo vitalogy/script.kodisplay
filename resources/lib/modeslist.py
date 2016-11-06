@@ -12,7 +12,7 @@ __path__          = __addon__.getAddonInfo('path')
 __icon__          = os.path.join(__path__, 'icon.png')
 __lib__           = os.path.join(__path__, 'resources', 'lib')
 __media__         = os.path.join(__path__, 'resources', 'media')
-__font__          = os.path.join(__path__, 'resources', 'font')
+__font__         = os.path.join(__path__, 'resources', 'font')
 __tftxml__        = os.path.join(xbmc.translatePath('special://masterprofile'),'TFT.xml')
 __tftdefaultxml__ = os.path.join(__path__, 'resources', 'TFT.xml.defaults')
 
@@ -62,13 +62,13 @@ class ModesList():
 
 
 	def xmlToList(self):
-		text = __addon__.getLocalizedString(32505)
+		errortext = __addon__.getLocalizedString(32505)
 
 		if not self.checkFileXML():
 			return False
 
 		root = self.doc.getroot()
-		for mode in modes:  # modes defined in modes.py
+		for mode in modes:  # modes defined in currentmode.py
 			tmpMode = root.find(mode)
 			if tmpMode is not None:
 				tftmode = 'TFT_MODE.' + mode.upper()
@@ -111,12 +111,11 @@ class ModesList():
 		# clear the list for the mode
 		self.modeslist[mode] = []
 
-		# begin every list with the background color black
+		# begin every list with the background with black color
 		# when a background is set in TFT.xml for the mode, then replace this
-#		self.modeslist[mode].append(['backgroundToDisplay', (0, 0, 0)])
 		default_background = self.pygame.Surface((self.display_w, self.display_h)).convert()
 		default_background.fill((0, 0, 0))
-		self.modeslist[mode].append(['backgroundToDisplay', default_background])
+		self.modeslist[mode].append(['backgroundToDisplay', 'visible', default_background])
 
 		new_background = default_background.copy()
 
@@ -128,12 +127,11 @@ class ModesList():
 			opt = []
 
 
-			# background color/image
+		### background color/image
 			if child.tag == 'background':
 				color = child.find('color')
 				if color is not None:
 					if isColorHex(color.text):  # from helper.py
-#						opt.append(hexToRGB(color.text))
 						new_background.fill(hexToRGB(color.text))
 						new_background = new_background.convert()
 						default_background.blit(new_background, (0 ,0))
@@ -155,12 +153,22 @@ class ModesList():
 					return False
 
 				xbmc_log(xbmc.LOGDEBUG, '<%s><%s> %s' % (node.tag, child.tag, default_background))
-				self.modeslist[mode][0] = (['backgroundToDisplay', default_background])  # replace default background
+				self.modeslist[mode][0] = (['backgroundToDisplay', 'visible', default_background])  # replace default background
 
 
-			# text
+		### text
 			elif child.tag == 'text':
 				opt.append('textToDisplay')
+
+				# visibility condition
+				visible = child.find('visible')
+				if visible is not None:
+					if visible.text.lower() == 'visible':
+						opt.append('visible')
+					else:
+						opt.append(visible.text)
+				else:
+					opt.append('visible')
 
 				# display
 				if child.get('display') is not None:
@@ -175,16 +183,6 @@ class ModesList():
 					notify(__addonname__, errortext, 10000, __icon__, xbmc.LOGWARNING)
 					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing display attribut' % (node.tag, child.tag))
 					return False
-
-				# visibility condition
-				visible = child.find('visible')
-				if visible is not None:
-					if visible.text.lower() == 'visible':
-						opt.append('visible')
-					else:
-						opt.append(visible.text)
-				else:
-					opt.append('visible')
 
 				# scrollmode
 				scrollmode = child.find('scrollmode')
@@ -289,9 +287,19 @@ class ModesList():
 
 
 
-			# image
+		### image
 			elif child.tag == 'image':
 				opt.append('imageToDisplay')
+
+				# visibility condition
+				visible = child.find('visible')
+				if visible is not None:
+					if visible.text.lower() == 'visible':
+						opt.append('visible')
+					else:
+						opt.append(visible.text)
+				else:
+					opt.append('visible')
 
 				# xpos
 				xpos = child.find('xpos')
@@ -395,6 +403,16 @@ class ModesList():
 					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing path attribut' % (node.tag, child.tag))
 					return False
 
+
+				xbmc_log(xbmc.LOGDEBUG, '<%s><%s> %s' % (node.tag, child.tag, opt))
+				self.modeslist[mode].append(opt)
+
+
+
+		### progressbar
+			elif child.tag == 'progressbar':
+				opt.append('progressBarToDisplay')
+
 				# visibility condition
 				visible = child.find('visible')
 				if visible is not None:
@@ -404,16 +422,6 @@ class ModesList():
 						opt.append(visible.text)
 				else:
 					opt.append('visible')
-
-
-				xbmc_log(xbmc.LOGDEBUG, '<%s><%s> %s' % (node.tag, child.tag, opt))
-				self.modeslist[mode].append(opt)
-
-
-
-			# progressbar
-			elif child.tag == 'progressbar':
-				opt.append('progressBarToDisplay')
 
 				# width
 				width = child.find('width')
@@ -559,4 +567,3 @@ class ModesList():
 
 #		xbmc_log(xbmc.LOGDEBUG, '%s %s' % (mode, self.modeslist[mode]))
 		return True
-

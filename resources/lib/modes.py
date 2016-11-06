@@ -1,5 +1,5 @@
 
-modes = 'startscreen', 'general', 'navigation', 'music', 'video', 'tvshow', 'pvr', 'picture', 'weather', 'screensaver'
+modes = 'startscreen', 'general', 'navigation', 'music', 'video', 'tvshow', 'pvrtv', 'pvrradio', 'picture', 'screensaver'
 
 class TFT_MODE:
 	STARTSCREEN = 0
@@ -8,8 +8,8 @@ class TFT_MODE:
 	MUSIC       = 3
 	VIDEO       = 4
 	TVSHOW      = 5
-	PVR         = 6
-	PICTURE     = 7
-	WEATHER     = 8
+	PVRTV       = 6
+	PVRRADIO    = 7
+	PICTURE     = 8
 	SCREENSAVER = 9
 	MAX_MODES   = 10 # dummy; last mode

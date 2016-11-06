@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import threading
 import xbmc
 import xbmcaddon
 import xbmcgui
@@ -142,14 +143,23 @@ class TFT():
 
 		self.tftModes = ModesList(self.distro, self.display_w, self.display_h, pygame)
 
+		self.mode = TFT_MODE.STARTSCREEN
+
+		self.queryData = False
+
 		if self.readSettings():
 			self.run()
 
 
 
 
-
 	def readSettings(self):
+
+		if self.queryData:
+			self.queryData = False
+			self.qth.join()
+			xbmc_log(xbmc.LOGNOTICE, 'Thread to query data has been stopped')
+
 		try:
 			self.fps = int(__addon__.getSetting('fps'))
 			self.navtimeout = int(__addon__.getSetting('navtimeout'))
@@ -170,7 +180,6 @@ class TFT():
 			GPIO.setup(self.backlightgpio, GPIO.OUT)
 			self.pwm = GPIO.PWM(self.backlightgpio, 1000)
 			self.pwm.start(100)
-#			self.pwm.ChangeDutyCycle(100)
 			self.dimmerisactive = True
 		else:
 			self.dimmerisactive = False
@@ -180,33 +189,110 @@ class TFT():
 
 		self.tftmodeslist = self.tftModes.returnModes()
 
-		# create list for holding scroll information
+		# create a list for holding scroll information
 		# if the width of rendered image greater then display width, put the scroll infos in this list
 		self.scrolllist = [[[1 for k in range(0, 2)] for j in range(0, len(self.tftmodeslist[i]))] for i in range(0, len(self.tftmodeslist))]
+
+		# create a list for holding the data queried from kodi
+		self.querylist = [[['0' for k in range(0, 3)] for j in range(0, len(self.tftmodeslist[i]))] for i in range(0, len(self.tftmodeslist))]
+
+		self.queryData = True
+		self.qth = threading.Thread(name='queryDataThread', target=self.queryDataThread)
+		self.qth.start()
 
 		return True
 
 
 
+	def isNavigation(self):
+		ret = False
 
-	def backgroundToDisplay(self, background):
+		menu = xbmc.getInfoLabel('$INFO[System.CurrentWindow]')
+		subMenu = xbmc.getInfoLabel('$INFO[System.CurrentControl]')
+
+		if menu != glob.oldMenu or subMenu != glob.oldSubMenu or (glob.navTimer + self.navtimeout) > time.time():
+			ret = True
+		if menu != glob.oldMenu or subMenu != glob.oldSubMenu:
+			glob.navTimer = time.time()
+		glob.oldMenu = menu
+		glob.oldSubMenu = subMenu
+
+		return ret
+
+
+
+
+	def queryDataThread(self):
+		xbmc_log(xbmc.LOGNOTICE, 'Thread to query data was started successfully')
+
+		while self.queryData:
+
+#			starttime = time.time()
+
+			if self.isNavigation():
+				self.mode = TFT_MODE.NAVIGATION
+			elif xbmc.getCondVisibility("PVR.IsPlayingTV"):
+				self.mode = TFT_MODE.PVRTV
+			elif xbmc.getCondVisibility("PVR.IsPlayingRadio"):
+				self.mode = TFT_MODE.PVRRADIO
+			elif xbmc.getCondVisibility('Player.HasVideo') and len(xbmc.getInfoLabel("VideoPlayer.TVShowTitle")):
+				self.mode = TFT_MODE.TVSHOW
+			elif xbmc.getCondVisibility('Player.HasVideo'):
+				self.mode = TFT_MODE.VIDEO
+			elif xbmc.getCondVisibility('Player.HasAudio'):
+				self.mode = TFT_MODE.MUSIC
+			elif xbmc.getCondVisibility('System.ScreenSaverActive'):
+				self.mode = TFT_MODE.SCREENSAVER
+			else:
+				self.mode = TFT_MODE.GENERAL
+
+			if self.dimmerisactive:
+				self.backlightControl()
+
+			xbmc.sleep(20)
+
+			for i in range(0, len(self.tftmodeslist[self.mode])):
+				if self.tftmodeslist[self.mode][i][1] == 'visible' or xbmc.getCondVisibility(self.tftmodeslist[self.mode][i][1]):
+					self.querylist[self.mode][i][0] = 'visible'
+				else:
+					self.querylist[self.mode][i][0] = 'hide'
+
+				xbmc.sleep(20)
+
+				if self.tftmodeslist[self.mode][i][0] == 'textToDisplay':
+					text = self.tftmodeslist[self.mode][i][2]
+					if text.lower().find('$info') >= 0:
+						text = xbmc.getInfoLabel(text)
+						# remove special character from infolabel text
+						for char in '()[]{}*':
+							text = text.replace(char,'')
+						# utf-8
+						self.querylist[self.mode][i][1] = text.strip().decode('utf-8', 'ignore')
+
+						xbmc.sleep(20)
+
+
+				if self.tftmodeslist[self.mode][i][0] == 'progressBarToDisplay':
+					# timeToSecs from helper.py
+					self.querylist[self.mode][i][1] = str(timeToSecs(xbmc.getInfoLabel("Player.Time(hh:mm:ss)")))
+					self.querylist[self.mode][i][2] = str(timeToSecs(xbmc.getInfoLabel("Player.Duration(hh:mm:ss)")))
+
+					xbmc.sleep(20)
+
+#			xbmc_log(xbmc.LOGNOTICE, 'start: %s  end: %s' % (str(starttime), str(time.time())))
+
+
+
+
+
+	def backgroundToDisplay(self, condition, background, mode, index):
 		self.background.blit(background, (0, 0))
 
 
-	def textToDisplay(self, text, condition, scrollmode, txtfont, size, color, xpos, cx, ypos, cy, mode, index):
-		infolabeltime = 0
-		rendertime = 0
-		starttime = time.time()
-		if condition == 'visible' or xbmc.getCondVisibility(condition):
+	def textToDisplay(self, condition, text, scrollmode, txtfont, size, color, xpos, cx, ypos, cy, mode, index):
+		if self.querylist[mode][index][0] == 'visible':
 			if text.lower().find('$info') >= 0:
-				text = xbmc.getInfoLabel(text)
-
-				infolabeltime = time.time() - starttime
-
-				# remove special character from infolabel text
-				for char in '()[]{}*':
-					text = text.replace(char,'')
-				text = text.strip().decode('utf-8', 'ignore')
+				text = self.querylist[mode][index][1]
 
 			if txtfont == 'none':
 				font = pygame.font.Font(None, size)
@@ -214,8 +300,6 @@ class TFT():
 				font = pygame.font.Font(txtfont, size)
 			textimage = font.render(text, 1, color)
 			textimage = textimage.convert_alpha()
-
-			rendertime = time.time() - starttime - infolabeltime
 
 			if (cx == 1 and textimage.get_width() > self.display_w + 20) or \
 				(cx == 0 and textimage.get_width() > (self.display_w - abs(xpos) + 10)):
@@ -240,8 +324,6 @@ class TFT():
 				size = (max_width, textimage.get_height())
 				textimage = textimage.subsurface(pygame.Rect(location, size))
 				textpos = textimage.get_rect()
-
-#				xbmc_log(xbmc.LOGNOTICE, 'max_width:%s\tlocation:%s\tsize:%s' % (str(max_width), str(location), str(size)))
 
 				if cx == 0:
 					if xpos < 0:
@@ -269,15 +351,14 @@ class TFT():
 				textpos.centery = ypos
 
 			self.background.blit(textimage, textpos)
-		xbmc_log(xbmc.LOGDEBUG, '\tinfolabel:%s\trender:%s' % (str(infolabeltime), str(rendertime)))
 
 
-	def imageToDisplay(self, image, imagepos, condition):
-		if condition == 'visible' or xbmc.getCondVisibility(condition):
+	def imageToDisplay(self, condition, image, imagepos, mode, index):
+		if self.querylist[mode][index][0] == 'visible':
 			self.background.blit(image, imagepos)
 
 
-	def progressBarToDisplay(self, width, height, barcolor, progresscolor, border, bordercolor, xpos, cx, ypos, cy):
+	def progressBarToDisplay(self, condition, width, height, barcolor, progresscolor, border, bordercolor, xpos, cx, ypos, cy, mode, index):
 		progbar = pygame.Rect(0, 0, width, height)
 
 		if cx == 0:
@@ -296,11 +377,10 @@ class TFT():
 		else:
 			progbar.centery = ypos
 
-		# timeToSecs from helper.py
-		playtime = timeToSecs(xbmc.getInfoLabel("Player.Time(hh:mm:ss)"))
-		duration = timeToSecs(xbmc.getInfoLabel("Player.Duration(hh:mm:ss)"))
+		playtime = int(self.querylist[mode][index][1])
+		duration = int(self.querylist[mode][index][2])
 
-		if playtime > 0:
+		if (playtime > 0 and duration > 0):
 			percent = int(( 1. * progbar.width / duration ) * playtime)
 		else:
 			percent = 0
@@ -316,21 +396,14 @@ class TFT():
 		for i in range(0, len(self.tftmodeslist[mode])):
 			func = self.tftmodeslist[mode][i][0]
 			values = self.tftmodeslist[mode][i][1:]
-			if func == 'textToDisplay':
-				values.extend([mode, i])
-			if glob.addonDebug:
-				xbmc_log(xbmc.LOGDEBUG, '%s' % func)
-				starttime = time.time()
+			values.extend([mode, i])
 			getattr(self, func)(*values)
-			if glob.addonDebug:
-				runfunctime = time.time() - starttime
-				xbmc_log(xbmc.LOGDEBUG, '\tneeded:%s' % str(runfunctime))
 
 
 
 
-	def backlightControl(self, mode):
-		if mode == TFT_MODE.SCREENSAVER:
+	def backlightControl(self):
+		if self.mode == TFT_MODE.SCREENSAVER:
 			if self.dimonscreensaver:
 				self.pwm.ChangeDutyCycle(self.dimmervalue)
 		else:
@@ -341,7 +414,6 @@ class TFT():
 	def run(self):
 
 		starttime = 0
-		gotmode = 0
 		drawtodisplay = 0
 		screenblit = 0
 		screenflip = 0
@@ -349,9 +421,8 @@ class TFT():
 
 		monitor = MyMonitor(update_settings = self.readSettings)
 
-		mode = TFT_MODE.STARTSCREEN
 		if self.displaystartscreen:
-			self.drawToDisplay(mode)
+			self.drawToDisplay(self.mode)
 			self.screen.blit(self.background, (0, 0))
 			pygame.display.flip()
 			xbmc.sleep(self.startscreentime * 1000)
@@ -360,39 +431,21 @@ class TFT():
 		while not monitor.abortRequested():
 
 			if glob.addonDebug:
-				xbmc_log(xbmc.LOGDEBUG, 'NEW FRAME')
+				xbmc_log(xbmc.LOGDEBUG, 'NEW FRAME - MODE: %s' % modes[self.mode])
 				starttime = time.time()
 
-			if self.dimmerisactive:
-				self.backlightControl(mode)
 
-			if isNavigation(self.navtimeout):
-				mode = TFT_MODE.NAVIGATION
-			elif xbmc.getCondVisibility('Player.HasVideo') and len(xbmc.getInfoLabel("VideoPlayer.TVShowTitle")):
-				mode = TFT_MODE.TVSHOW
-			elif xbmc.getCondVisibility('Player.HasVideo'):
-				mode = TFT_MODE.VIDEO
-			elif xbmc.getCondVisibility('Player.HasAudio'):
-				mode = TFT_MODE.MUSIC
-			elif xbmc.getCondVisibility('System.ScreenSaverActive'):
-				mode = TFT_MODE.SCREENSAVER
-			else:
-				mode = TFT_MODE.GENERAL
-
+			self.drawToDisplay(self.mode)
 			if glob.addonDebug:
-				gotmode = time.time() - starttime
-
-			self.drawToDisplay(mode)
-			if glob.addonDebug:
-				drawtodisplay = time.time() - starttime - gotmode
+				drawtodisplay = time.time() - starttime
 
 			self.screen.blit(self.background, (0, 0))
 			if glob.addonDebug:
-				screenblit = time.time() - starttime - drawtodisplay - gotmode
+				screenblit = time.time() - starttime - drawtodisplay
 
 			pygame.display.flip()
 			if glob.addonDebug:
-				screenflip = time.time() - starttime - screenblit - drawtodisplay - gotmode
+				screenflip = time.time() - starttime - screenblit - drawtodisplay
 
 			self.clock.tick(self.fps)
 
@@ -401,14 +454,22 @@ class TFT():
 
 			if glob.addonDebug:
 				wholetime = time.time() - starttime
-				xbmc_log(xbmc.LOGDEBUG, 'gotmode:%s\tdrawtodisplay:%s\tscreenblit:%s\tscreenflip:%s\twholetime:%s' % (str(gotmode), str(drawtodisplay), str(screenblit), str(screenflip), str(wholetime)))
+				xbmc_log(xbmc.LOGDEBUG, 'drawtodisplay:%s\tscreenblit:%s\tscreenflip:%s\twholetime:%s' % (str(drawtodisplay), str(screenblit), str(screenflip), str(wholetime)))
+
+		if self.dimactivated:
+			self.pwm.stop()
+
+		if self.queryData:
+			self.queryData = False
+			self.qth.join()
+			xbmc_log(xbmc.LOGNOTICE, 'Thread to query data has been stopped')
+
 
 if (__name__ == "__main__"):
 	xbmc_log(xbmc.LOGNOTICE, 'Starting')
 	TFT()
 	xbmc_log(xbmc.LOGNOTICE, 'Closing')
 	pygame.quit()
-	self.pwm.stop()
 	GPIO.cleanup()
 	sys.exit(0)
 

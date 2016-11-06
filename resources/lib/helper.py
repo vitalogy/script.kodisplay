@@ -114,21 +114,6 @@ def getDistroName():
 
 
 
-def isNavigation(navtimeout):
-	ret = False
-
-	menu = xbmc.getInfoLabel('$INFO[System.CurrentWindow]')
-	subMenu = xbmc.getInfoLabel('$INFO[System.CurrentControl]')
-
-	if menu != glob.oldMenu or subMenu != glob.oldSubMenu or (glob.navTimer + navtimeout) > time.time():
-		ret = True
-	if menu != glob.oldMenu or subMenu != glob.oldSubMenu:
-		glob.navTimer = time.time()
-	glob.oldMenu = menu
-	glob.oldSubMenu = subMenu
-
-	return ret
-
 
 
 
