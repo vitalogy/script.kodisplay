@@ -19,10 +19,13 @@
   <!--Debug-->
   <string id="32300">Debug</string>
   <string id="32301">Debug einschalten</string>
+  <string id="32302">Zeige die FPS auf dem Display</string>
+  <string id="32303">Zeige die Window ID auf dem Display</string>
+  <string id="32304">Logge die Zeit pro Frame</string>
 
   <!--LibreELEC Notification-->
-  <string id="32400">SDL nicht vorhanden!</string>
-  <string id="32401">Fehler beim Laden von SDL!</string>
+  <string id="32400">Bitte das Addon 'SDL + pygame' installieren</string>
+  <string id="32401">Bitte das Addon 'Raspberry Pi Tools' installieren</string>
 
   <!--Common Notifications-->
   <string id="32500">Fehler beim Importieren von pygame!</string>

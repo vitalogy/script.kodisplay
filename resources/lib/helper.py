@@ -153,27 +153,3 @@ def notify(title, message, time, icon, level=0):
 		xbmc.executebuiltin(msg)
 	except Exception, e:
 		xbmc_log(xbmc.LOGERROR, 'Notification ERROR: (' + repr(e) + ')')
-
-
-
-def execute(command_line, get_result=0):
-	try:
-		xbmc_log(xbmc.LOGDEBUG, 'execute command: ' + command_line)
-		if get_result == 0:
-			process = subprocess.Popen(command_line, shell=True, close_fds=True)
-			process.wait()
-		else:
-			result = ''
-			process = subprocess.Popen(command_line, shell=True, close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-			process.wait()
-			for line in process.stdout.readlines():
-				result = result + line
-			return result
-		xbmc_log(xbmc.LOGDEBUG, 'executed command has been finshed successfully')
-	except Exception, e:
-		xbmc_log(xbmc.LOGERROR, 'executed command :: ' + command_line + ' :: with ERROR: (' + repr(e) + ')')
-
-
-
-
-

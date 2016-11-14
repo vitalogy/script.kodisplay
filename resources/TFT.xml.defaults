@@ -29,31 +29,32 @@
 			<xpos>-5</xpos>
 			<ypos>1</ypos>
 		</text>
-		<image path="kodi.png">
+		<image path="$INFO[Distrologo]">
+			<visible>!Player.Muted</visible>
 			<resx>60</resx>
 			<resy>60</resy>
-			<xpos>3</xpos>
-			<ypos>3</ypos>
+			<xpos>5</xpos>
+			<ypos>5</ypos>
 		</image>
 		<image path="muted.png">
 			<visible>Player.Muted</visible>
-			<resx>40</resx>
-			<resy>40</resy>
-			<xpos>130</xpos>
-			<ypos>10</ypos>
+			<resx>60</resx>
+			<resy>60</resy>
+			<xpos>5</xpos>
+			<ypos>5</ypos>
 		</image>
 		<image path="recplanned.png">
 			<visible>Pvr.HasTimer</visible>
 			<resx>80</resx>
 			<resy>30</resy>
-			<xpos>10</xpos>
+			<xpos>-5</xpos>
 			<ypos>-5</ypos>
 		</image>
 		<image path="recording.png">
 			<visible>Pvr.IsRecording</visible>
 			<resx>80</resx>
 			<resy>30</resy>
-			<xpos>10</xpos>
+			<xpos>-5</xpos>
 			<ypos>-5</ypos>
 		</image>
 		<text display="$INFO[System.CurrentWindow]">
@@ -72,28 +73,35 @@
 			<xpos>center</xpos>
 			<ypos>120</ypos>
 		</text>
+		<image path="/usr/share/kodi/addons/resource.images.weathericons.default/resources/$INFO[Weather.FanartCode].png">
+			<visible>Weather.IsFetched</visible>
+			<resx>150</resx>
+			<resy>150</resy>
+			<xpos>40</xpos>
+			<ypos>0</ypos>
+		</image>
 		<text display="$INFO[Weather.Conditions]">
 			<visible>Weather.IsFetched</visible>
 			<font>MC360.ttf</font>
-			<size>36</size>
-			<color>#C1C1C1</color>
-			<xpos>center</xpos>
-			<ypos>80</ypos>
-		</text>
-		<text display="$INFO[Weather.Temperature]">
-			<visible>Weather.IsFetched</visible>
-			<font>MC360.ttf</font>
 			<size>50</size>
-			<color>#C1C1C1</color>
+			<color>#EEDC82</color>
 			<xpos>center</xpos>
-			<ypos>130</ypos>
+			<ypos>120</ypos>
 		</text>
 		<text display="CPU: $INFO[System.CPUTemperature]">
 			<font>None</font>
-			<size>30</size>
+			<size>36</size>
 			<color>#EEE0E5</color>
-			<xpos>2</xpos>
-			<ypos>-2</ypos>
+			<xpos>5</xpos>
+			<ypos>-5</ypos>
+		</text>
+		<text display="$INFO[Weather.Temperature]">
+			<visible>Weather.IsFetched</visible>
+			<font>None</font>
+			<size>80</size>
+			<color>#C1C1C1</color>
+			<xpos>-5</xpos>
+			<ypos>-5</ypos>
 		</text>
 	</general>
 	<navigation>
@@ -105,31 +113,32 @@
 			<ypos>1</ypos>
 		</text>
 		<image path="kodi.png">
+			<visible>!Player.Muted</visible>
 			<resx>60</resx>
 			<resy>60</resy>
-			<xpos>3</xpos>
-			<ypos>3</ypos>
+			<xpos>5</xpos>
+			<ypos>5</ypos>
 		</image>
 		<image path="muted.png">
 			<visible>Player.Muted</visible>
-			<resx>40</resx>
-			<resy>40</resy>
-			<xpos>130</xpos>
-			<ypos>10</ypos>
+			<resx>60</resx>
+			<resy>60</resy>
+			<xpos>5</xpos>
+			<ypos>5</ypos>
 		</image>
 		<image path="recplanned.png">
 			<visible>Pvr.HasTimer</visible>
 			<resx>80</resx>
 			<resy>30</resy>
-			<xpos>80</xpos>
+			<xpos>100</xpos>
 			<ypos>5</ypos>
 		</image>
 		<image path="recording.png">
 			<visible>Pvr.IsRecording</visible>
 			<resx>80</resx>
 			<resy>30</resy>
-			<xpos>80</xpos>
-			<ypos>5</ypos>
+			<xpos>100</xpos>
+			<ypos>-5</ypos>
 		</image>
 		<text display="$INFO[System.CurrentWindow]">
 			<font>None</font>
@@ -145,54 +154,76 @@
 			<xpos>center</xpos>
 			<ypos>120</ypos>
 		</text>
+		<text display="CPU: $INFO[System.CPUTemperature]">
+			<font>None</font>
+			<size>36</size>
+			<color>#EEE0E5</color>
+			<xpos>5</xpos>
+			<ypos>-5</ypos>
+		</text>
+		<text display="$INFO[Weather.Temperature]">
+			<visible>Weather.IsFetched</visible>
+			<font>None</font>
+			<size>46</size>
+			<color>#C1C1C1</color>
+			<xpos>-5</xpos>
+			<ypos>-5</ypos>
+		</text>
 	</navigation>
 	<music>
+		<image path="kodi.png">
+			<resx>60</resx>
+			<resy>60</resy>
+			<xpos>5</xpos>
+			<ypos>5</ypos>
+		</image>
+		<image path="$INFO[Player.Art(thumb)]">
+			<resx>140</resx>
+			<resy>140</resy>
+			<xpos>center</xpos>
+			<ypos>center</ypos>
+			<border>2</border>
+			<bordercolor>#E5E5E5</bordercolor>
+		</image>
 		<text display="$INFO[System.Time(hh:mm:ss)]">
 			<font>MC360.ttf</font>
 			<size>40</size>
 			<color>#E5E5E5</color>
 			<xpos>-5</xpos>
-			<ypos>5</ypos>
+			<ypos>1</ypos>
 		</text>
 		<image path="recplanned.png">
 			<visible>Pvr.HasTimer</visible>
 			<resx>80</resx>
-			<resy>30</resy>
+			<resy>50</resy>
 			<xpos>80</xpos>
 			<ypos>5</ypos>
 		</image>
 		<image path="recording.png">
 			<visible>Pvr.IsRecording</visible>
 			<resx>80</resx>
-			<resy>30</resy>
+			<resy>50</resy>
 			<xpos>80</xpos>
 			<ypos>5</ypos>
 		</image>
-		<text display="$INFO[MusicPlayer.Artist]">
+		<text display="$INFO[MusicPlayer.Artist] - $INFO[MusicPlayer.Title]">
 			<font>MC360.ttf</font>
-			<size>40</size>
-			<color>#C1C1C1</color>
+			<size>70</size>
+			<color>#E5E5E5</color>
 			<xpos>center</xpos>
 			<ypos>50</ypos>
 		</text>
-		<text display="$INFO[MusicPlayer.Title]">
-			<font>MC360.ttf</font>
-			<size>40</size>
-			<color>#858585</color>
-			<xpos>center</xpos>
-			<ypos>100</ypos>
-		</text>
 		<text display="$INFO[Player.Time]">
 			<font>MC360.ttf</font>
-			<size>40</size>
-			<color>#949494</color>
+			<size>45</size>
+			<color>#E5E5E5</color>
 			<xpos>10</xpos>
 			<ypos>-40</ypos>
 		</text>
 		<text display="$INFO[Player.Duration]">
 			<font>MC360.ttf</font>
-			<size>40</size>
-			<color>#949494</color>
+			<size>45</size>
+			<color>#E5E5E5</color>
 			<xpos>-10</xpos>
 			<ypos>-40</ypos>
 		</text>
@@ -200,7 +231,7 @@
 			<width>300</width>
 			<height>30</height>
 			<xpos>center</xpos>
-			<ypos>200</ypos>
+			<ypos>-10</ypos>
 			<border>2</border>
 			<bordercolor>#949494</bordercolor>
 			<barcolor>#606060</barcolor>
@@ -215,63 +246,68 @@
 		</image>
 	</music>
 	<video>
-		<text display="$INFO[System.Time(hh:mm:ss)]">
+		<image path="$INFO[Player.Art(thumb)]">
+			<resy>150</resy>
+			<xpos>10</xpos>
+			<ypos>10</ypos>
+		</image>
+		<text display="$INFO[System.Time(hh:mm)]">
 			<font>MC360.ttf</font>
 			<size>40</size>
 			<color>#E5E5E5</color>
 			<xpos>-5</xpos>
-			<ypos>5</ypos>
+			<ypos>1</ypos>
 		</text>
 		<image path="recplanned.png">
 			<visible>Pvr.HasTimer</visible>
 			<resx>80</resx>
 			<resy>30</resy>
-			<xpos>80</xpos>
-			<ypos>5</ypos>
+			<xpos>130</xpos>
+			<ypos>15</ypos>
 		</image>
 		<image path="recording.png">
 			<visible>Pvr.IsRecording</visible>
 			<resx>80</resx>
 			<resy>30</resy>
-			<xpos>80</xpos>
-			<ypos>5</ypos>
+			<xpos>130</xpos>
+			<ypos>15</ypos>
 		</image>
 		<text display="$INFO[VideoPlayer.Title]">
 			<font>None</font>
-			<size>70</size>
+			<size>75</size>
 			<color>#C1C1C1</color>
-			<xpos>center</xpos>
+			<xpos>120</xpos>
 			<ypos>60</ypos>
 		</text>
 		<text display="$INFO[VideoPlayer.Year]">
 			<font>None</font>
 			<size>40</size>
 			<color>#858585</color>
-			<xpos>center</xpos>
-			<ypos>110</ypos>
+			<xpos>180</xpos>
+			<ypos>125</ypos>
 		</text>
 		<text display="$INFO[Player.Time]">
 			<font>MC360.ttf</font>
 			<size>40</size>
 			<color>#949494</color>
 			<xpos>5</xpos>
-			<ypos>-40</ypos>
+			<ypos>-34</ypos>
 		</text>
 		<text display="$INFO[Player.Duration]">
 			<font>MC360.ttf</font>
 			<size>40</size>
 			<color>#949494</color>
 			<xpos>-5</xpos>
-			<ypos>-40</ypos>
+			<ypos>-34</ypos>
 		</text>
 		<progressbar>
-			<width>300</width>
+			<width>310</width>
 			<height>30</height>
 			<xpos>center</xpos>
-			<ypos>200</ypos>
+			<ypos>-2</ypos>
 			<border>2</border>
 			<barcolor>#606060</barcolor>
-			<progresscolor>#AB0000</progresscolor>
+			<progresscolor>#DF0000</progresscolor>
 		</progressbar>
 		<image path="muted.png">
 			<visible>Player.Muted</visible>
@@ -287,7 +323,7 @@
 			<size>40</size>
 			<color>#E5E5E5</color>
 			<xpos>-5</xpos>
-			<ypos>5</ypos>
+			<ypos>1</ypos>
 		</text>
 		<image path="recplanned.png">
 			<visible>Pvr.HasTimer</visible>
@@ -317,7 +353,7 @@
 			<xpos>center</xpos>
 			<ypos>75</ypos>
 		</text>
-		<text display="s$INFO[VideoPlayer.Season] -  e$INFO[VideoPlayer.Episode]">
+		<text display="s$INFO[VideoPlayer.Season]  -  e$INFO[VideoPlayer.Episode]">
 			<font>MC360.ttf</font>
 			<size>36</size>
 			<color>#858585</color>
@@ -356,12 +392,18 @@
 		</image>
 	</tvshow>
 	<pvrtv>
+		<image path="$INFO[Player.Art(thumb)]">
+			<resx>160</resx>
+			<resy>160</resy>
+			<xpos>center</xpos>
+			<ypos>center</ypos>
+		</image>
 		<text display="$INFO[System.Time(hh:mm)]">
 			<font>MC360.ttf</font>
 			<size>40</size>
 			<color>#E5E5E5</color>
 			<xpos>-5</xpos>
-			<ypos>5</ypos>
+			<ypos>1</ypos>
 		</text>
 		<image path="recplanned.png">
 			<visible>Pvr.HasTimer</visible>
@@ -421,7 +463,7 @@
 			<size>40</size>
 			<color>#E5E5E5</color>
 			<xpos>-5</xpos>
-			<ypos>5</ypos>
+			<ypos>1</ypos>
 		</text>
 		<image path="recplanned.png">
 			<visible>Pvr.HasTimer</visible>
@@ -481,7 +523,7 @@
 			<size>40</size>
 			<color>#E5E5E5</color>
 			<xpos>-5</xpos>
-			<ypos>5</ypos>
+			<ypos>1</ypos>
 		</text>
 		<text display="picture">
 			<font>None</font>
@@ -492,23 +534,29 @@
 		</text>
 	</picture>
 	<screensaver>
+		<image path="$INFO[Distrologo]">
+			<resx>220</resx>
+			<resy>220</resy>
+			<xpos>center</xpos>
+			<ypos>center</ypos>
+		</image>
 		<image path="recplanned.png">
 			<visible>Pvr.HasTimer</visible>
 			<resx>80</resx>
 			<resy>30</resy>
-			<xpos>80</xpos>
-			<ypos>5</ypos>
+			<xpos>-5</xpos>
+			<ypos>-5</ypos>
 		</image>
 		<image path="recording.png">
 			<visible>Pvr.IsRecording</visible>
 			<resx>80</resx>
 			<resy>30</resy>
-			<xpos>80</xpos>
-			<ypos>5</ypos>
+			<xpos>-5</xpos>
+			<ypos>-5</ypos>
 		</image>
 		<text display="$INFO[System.Time(hh:mm:ss)]">
 			<font>MC360.ttf</font>
-			<size>220</size>
+			<size>140</size>
 			<color>#E5E5E5</color>
 			<xpos>center</xpos>
 			<ypos>center</ypos>

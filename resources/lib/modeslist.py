@@ -1,7 +1,7 @@
 import os
-import shutil
 import xbmc
 import xbmcaddon
+import shutil
 
 from xml.etree import ElementTree as xmltree
 
@@ -21,12 +21,11 @@ from modes import *
 
 
 class ModesList():
-	def __init__(self, distro, display_w, display_h, pygame):
+	def __init__(self, distro, display_w, display_h):
 		self.modeslist = [None] * TFT_MODE.MAX_MODES
 		self.distro = distro
 		self.display_w = display_w
 		self.display_h = display_h
-		self.pygame = pygame
 
 
 	def returnModes(self):
@@ -43,6 +42,7 @@ class ModesList():
 			else:
 				try:
 					shutil.copy2(__tftdefaultxml__, __tftxml__)
+					xbmc_log(xbmc.LOGWARNING, 'Copied TFT.xml.defaults to TFT.xml!')
 				except:
 					errortext = __addon__.getLocalizedString(32503)
 					notify(__addonname__, errortext, 5000, __icon__, xbmc.LOGWARNING)
@@ -68,7 +68,7 @@ class ModesList():
 			return False
 
 		root = self.doc.getroot()
-		for mode in modes:  # modes defined in currentmode.py
+		for mode in modes:  # modes defined in modes.py
 			tmpMode = root.find(mode)
 			if tmpMode is not None:
 				tftmode = 'TFT_MODE.' + mode.upper()
@@ -79,22 +79,28 @@ class ModesList():
 				xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s> tag for the mode is missing' % mode)
 				return False
 
+
+
 		xbmc_log(xbmc.LOGNOTICE, "Loaded layout from %s successfully" % (__tftxml__))
 		return True
 
 	def getImagePath(self, path):
+		# special infolabel distrologo present
 		if path.lower() == '$info[distrologo]':
 			logo = self.distro.lower() + '.png'
 			imagepath = os.path.join(__media__, logo)
 			if not os.path.isfile(imagepath):
 				imagepath = os.path.join(__media__, 'kodi.png')
-		# full path given
+		# special infolabel from kodi present
+		elif path.lower().find('$info') >= 0:
+			imagepath = path
+		# full path to the image given
 		elif os.path.isfile(path):
 			imagepath = path
 		# look for the image in addons __media__ dir
 		elif os.path.isfile(os.path.join(__media__, path)):
 			imagepath = os.path.join(__media__, path)
-		# look for the image in libreelecs's storage dir
+		# look for the image in libreelec's storage dir
 		elif os.path.isfile(os.path.join('/storage/', path)):
 			imagepath = os.path.join('/storage/', path)
 		# look for the image in kodi's configuration dir
@@ -111,54 +117,45 @@ class ModesList():
 		# clear the list for the mode
 		self.modeslist[mode] = []
 
-		# begin every list with the background with black color
+		# begin every list with a background in black color
 		# when a background is set in TFT.xml for the mode, then replace this
-		default_background = self.pygame.Surface((self.display_w, self.display_h)).convert()
-		default_background.fill((0, 0, 0))
-		self.modeslist[mode].append(['backgroundToDisplay', 'visible', default_background])
-
-		new_background = default_background.copy()
-
-
+		self.modeslist[mode].append(['renderBackground', 'visible', '#000000'])
 
 		errortext = __addon__.getLocalizedString(32505)
+
+		xbmc_log(xbmc.LOGDEBUG, '<%s>' % node.tag)
 
 		for child in node:
 			opt = []
 
 
-		### background color/image
+
+		### background color
 			if child.tag == 'background':
+				opt.append('renderBackground')
+				opt.append('visible')
+
 				color = child.find('color')
 				if color is not None:
 					if isColorHex(color.text):  # from helper.py
-						new_background.fill(hexToRGB(color.text))
-						new_background = new_background.convert()
-						default_background.blit(new_background, (0 ,0))
+						opt.append(color.text.encode('utf-8'))
 					else:
 						notify(__addonname__, errortext, 10000, __icon__, xbmc.LOGWARNING)
 						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><color> %s has not the right format' % (node.tag, child.tag, color.text))
 						return False
-
-				image = child.find('image')
-				if image is not None:
-					imagepath = self.getImagePath(image.text)
-					image = self.pygame.image.load(imagepath).convert_alpha()
-					image = self.pygame.transform.scale(image, (self.display_w, self.display_h))
-					default_background.blit(image, (0, 0))
-
-				if color is None and image is None:
+				else:
 					notify(__addonname__, errortext, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <color> and/or <image> tag' % (node.tag, child.tag))
+					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <color> tag' % (node.tag, child.tag))
 					return False
 
-				xbmc_log(xbmc.LOGDEBUG, '<%s><%s> %s' % (node.tag, child.tag, default_background))
-				self.modeslist[mode][0] = (['backgroundToDisplay', 'visible', default_background])  # replace default background
+				self.modeslist[mode][0] = opt[:]
+				xbmc_log(xbmc.LOGDEBUG, '  <%s> %s' % (child.tag, opt))
+
 
 
 		### text
 			elif child.tag == 'text':
-				opt.append('textToDisplay')
+				opt.append('renderText')
 
 				# visibility condition
 				visible = child.find('visible')
@@ -198,9 +195,9 @@ class ModesList():
 						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><scrollmode> %s is unknown' % (node.tag, child.tag, scrollmode.text))
 						return False
 				else:
-					opt.append('none')
+					opt.append('marquee')
 
-				# font
+				# fontname
 				font = child.find('font')
 				if font is not None:
 					if font.text.lower() == 'none':
@@ -216,7 +213,7 @@ class ModesList():
 					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <font> tag' % (node.tag, child.tag))
 					return False
 
-				# size
+				# fontsize
 				size = child.find('size')
 				if size is not None:
 					if isInteger(size.text):  # from helper.py
@@ -282,14 +279,14 @@ class ModesList():
 					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <ypos> tag' % (node.tag, child.tag))
 					return False
 
-				xbmc_log(xbmc.LOGDEBUG, '<%s><%s> %s' % (node.tag, child.tag, opt))
 				self.modeslist[mode].append(opt)
+				xbmc_log(xbmc.LOGDEBUG, '  <%s>   %s   text: %s   scrollmode: %s' % (child.tag, opt[1], opt[2], opt[3]))
 
 
 
 		### image
 			elif child.tag == 'image':
-				opt.append('imageToDisplay')
+				opt.append('renderImage')
 
 				# visibility condition
 				visible = child.find('visible')
@@ -300,6 +297,43 @@ class ModesList():
 						opt.append(visible.text)
 				else:
 					opt.append('visible')
+
+				# append path to the image or the infolabel
+				if child.get('path') is not None:
+					opt.append(self.getImagePath(child.get('path')))
+				else:
+					notify(__addonname__, errortext, 10000, __icon__, xbmc.LOGWARNING)
+					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing path attribut' % (node.tag, child.tag))
+					return False
+
+				# border
+				border = child.find('border')
+				if border is not None:
+					if isInteger(border.text):  # from helper.py
+						if int(border.text) < 0:
+							notify(__addonname__, errortext, 10000, __icon__, xbmc.LOGWARNING)
+							xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><border> value can not be %s (negative)' % (node.tag, child.tag, border.text))
+							return False
+						else:
+							opt.append(int(border.text))
+					else:
+						notify(__addonname__, errortext, 10000, __icon__, xbmc.LOGWARNING)
+						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><border> value %s is not supported' % (node.tag, child.tag, border.text))
+						return False
+				else:
+					opt.append(0)
+
+				# color of border
+				color = child.find('bordercolor')
+				if color is not None:
+					if isColorHex(color.text):  # from helper.py
+						opt.append(hexToRGB(color.text))
+					else:
+						notify(__addonname__, errortext, 10000, __icon__, xbmc.LOGWARNING)
+						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><bordercolor> %s has not the right format' % (node.tag, child.tag, color.text))
+						return False
+				else:
+					opt.append(hexToRGB('#FFFFFF')) # white
 
 				# xpos
 				xpos = child.find('xpos')
@@ -369,59 +403,34 @@ class ModesList():
 						xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><resy> value %s is not supported' % (node.tag, child.tag, xpos.text))
 						return False
 				else:
-					image_resy_y = 0
+					image_res_y = 0
 
-				# load and prepare the image
-				if child.get('path') is not None:
-					imagepath = self.getImagePath(child.get('path'))
-					image = self.pygame.image.load(imagepath)
-					if image_res_x > 0 or image_res_y > 0:
-						image = self.pygame.transform.scale(image, aspect_scale(image, (image_res_x, image_res_y)))
-					image = image.convert_alpha()
-
-					imagepos = image.get_rect()
-
-					if centerx == 0:
-						if image_pos_x < 0:
-							imagepos.x = self.display_w - image.get_width() + image_pos_x
-						else:
-							imagepos.x = image_pos_x
-					else:
-						imagepos.centerx = image_pos_x
-
-					if centery == 0:
-						if image_pos_y < 0:
-							imagepos.y = self.display_h - image.get_height() + image_pos_y
-						else:
-							imagepos.y = image_pos_y
-					else:
-						imagepos.centery = image_pos_y
-
-					opt.extend([image, imagepos])
-				else:
+				if image_res_x == 0 and image_res_y == 0:
 					notify(__addonname__, errortext, 10000, __icon__, xbmc.LOGWARNING)
-					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing path attribut' % (node.tag, child.tag))
+					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s><resx> AND <resy> can not be both 0' % (node.tag, child.tag))
 					return False
 
+				# append the other information
+				opt.extend([image_pos_x, centerx, image_pos_y, centery, image_res_x, image_res_y])
 
-				xbmc_log(xbmc.LOGDEBUG, '<%s><%s> %s' % (node.tag, child.tag, opt))
 				self.modeslist[mode].append(opt)
+				xbmc_log(xbmc.LOGDEBUG, '  <%s>  %s   path: %s' % (child.tag, opt[1], opt[2]))
 
 
 
 		### progressbar
 			elif child.tag == 'progressbar':
-				opt.append('progressBarToDisplay')
+				opt.append('renderProgressbar')
 
 				# visibility condition
 				visible = child.find('visible')
 				if visible is not None:
 					if visible.text.lower() == 'visible':
-						opt.append('visible')
+						opt.extend(['visible', 'dummy'])
 					else:
-						opt.append(visible.text)
+						opt.extend([visible.text, 'dummy'])
 				else:
-					opt.append('visible')
+					opt.extend(['visible', 'dummy'])
 
 				# width
 				width = child.find('width')
@@ -552,18 +561,16 @@ class ModesList():
 					xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s><%s> missing <ypos> tag' % (node.tag, child.tag))
 					return False
 
-				xbmc_log(xbmc.LOGDEBUG, '<%s><%s> %s' % (node.tag, child.tag, opt))
 				self.modeslist[mode].append(opt)
+				xbmc_log(xbmc.LOGDEBUG, '  <%s>  %s   width: %s   height: %s' % (child.tag, opt[1], opt[3], opt[4]))
 
 
 
-			# <tag> is not supported
+		### <tag> is not supported
 			else:
 				notify(__addonname__, errortext, 10000, __icon__, xbmc.LOGWARNING)
 				xbmc_log(xbmc.LOGWARNING, 'TFT.xml: <%s> the tag <%s> is not supported' % (node.tag, child.tag))
 				return False
 
 
-
-#		xbmc_log(xbmc.LOGDEBUG, '%s %s' % (mode, self.modeslist[mode]))
 		return True

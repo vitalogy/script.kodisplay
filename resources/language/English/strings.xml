@@ -11,18 +11,21 @@
 
   <!--Backlight-->
   <string id="32200">Backlight</string>
-  <string id="32301">Active dim</string>
-  <string id="32302">BCM GPIO</string>
-  <string id="32303">Dim on screensaver</string> 
-  <string id="32304">Dimmer value</string>
+  <string id="32201">Active dim</string>
+  <string id="32202">BCM GPIO</string>
+  <string id="32203">Dim on screensaver</string>
+  <string id="32204">Dimmer value</string>
 
   <!--Debug-->
   <string id="32300">Debug</string>
   <string id="32301">Enable debug</string>
+  <string id="32302">Show FPS on display</string>
+  <string id="32303">Show current window id on display</string>
+  <string id="32304">Log time per frame</string>
 
   <!--LibreELEC Notification-->
-  <string id="32400">SDL does not exist</string>
-  <string id="32401">Loading SDL failed!</string>
+  <string id="32400">Please install the addon 'SDL + pygame'</string>
+  <string id="32401">Please install the addon 'Raspberry Pi Tools'</string>
 
   <!--Common Notifications-->
   <string id="32500">Importing pygame failed!</string>
