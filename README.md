@@ -10,19 +10,37 @@
 * SDL_ttf
 * RPi.GPIO
 
-## some screenshots
+## Screenshots
+
+some screenshots from a display with 320x240
+
+### both general (no navigation or media playing)
 
 ![](http://milaw.biz/files/kodisplay/general1.png)
 ![](http://milaw.biz/files/kodisplay/general2.png)
 
+### general & music
+
 ![](http://milaw.biz/files/kodisplay/general3.png)
 ![](http://milaw.biz/files/kodisplay/music.png)
+
+### both navigiation
 
 ![](http://milaw.biz/files/kodisplay/navigation1.png)
 ![](http://milaw.biz/files/kodisplay/navigation2.png)
 
+### video & screensaver
+
 ![](http://milaw.biz/files/kodisplay/video.png)
 ![](http://milaw.biz/files/kodisplay/screensaver.png)
+
+### pvrtv
+
+![](http://milaw.biz/files/kodisplay/pvrtv.png)
+
+## Layout
+
+The layout for the screens/modes can be defined in the file .kodi/userdata/TFT.xml.
 
 
 ## internal used lists
