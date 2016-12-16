@@ -1,1 +1,1 @@
-addonDebug = True
+addonDebug = False

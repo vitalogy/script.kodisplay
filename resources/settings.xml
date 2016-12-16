@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
   <category label="32100">
-    <setting id="fps" type="slider" label="32101" option="int" default="30" range="15,40" />
-    <setting id="displaystartscreen" type="bool" label="32102" default="true" />
-    <setting id="startscreentime" enable="eq(-1,true)" type="slider" label="32103" option="int" default="3" range="1,10" />
-    <setting id="navtimeout" type="slider" label="32104" option="int" default="4" range="1,20" />
-    <setting id="scrollspeed" type="slider" label="32105" option="int" default="4" range="1,20" />
+    <setting id="sdldriver" type="labelenum" label="32101" default="none" values="none|fbcon|X" />
+    <setting id="fbdev" enable="eq(-1,1)" type="labelenum" label="32102" values="/dev/fb1|/dev/fb2|/dev/fb3" />
+    <setting id="enable_bootsplash" visible="false" type="bool" default="false" />
+    <setting type="lsep" label="32107" />
+    <setting id="bootsplash" enable="eq(-4,1) + eq(-2,true)" type="bool" label="32103" default="false" />
+    <setting id="fps" type="slider" label="32104" option="int" default="20" range="10,60" />
+    <setting id="navtimeout" type="slider" label="32105" option="int" default="5" range="1,20" />
+    <setting id="scrollspeed" type="slider" label="32106" option="int" default="1" range="1,10" />
   </category>
   <category label="32200">
-    <setting id="dimactive" type="bool" label="32201" default="false" />
-    <setting id="backlightgpio" enable="eq(-1,true)" type="number" label="32202" option="int" default="23" />
-    <setting id="dimonscreensaver" enable="eq(-2,true)" type="bool" label="32203" default="false" subsetting="true" />
-    <setting id="dimmervalue" enable="eq(-3,true)" type="slider" label="32204" option="int" default="50" range="5,5,100" subsetting="true" />
+    <setting type="lsep" label="32299" />
   </category>
   <category label="32300">
-    <setting id="addondebug" type="bool" label="32301" default="false" />
-    <setting id="showfps" enable="eq(-1,true)" type="bool" label="32302" default="true" />
-    <setting id="showwindowid" enable="eq(-2,true)" type="bool" label="32303" default="false" />
-    <setting id="timeperframe" enable="eq(-3,true)" type="bool" label="32304" default="false" />
+    <setting id="showfps" type="bool" label="32301" default="false" />
+    <setting id="showwindowid" type="bool" label="32302" default="false" />
+    <setting id="addondebug" type="bool" label="32303" default="false" />
+    <setting id="timeperframe" enable="eq(-1,true)" type="bool" label="32304" default="false" />
   </category>
 </settings>

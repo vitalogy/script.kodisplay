@@ -1,14 +1,11 @@
 
 # script.kodisplay
 
-## WIP
-
 ## Dependencies:
 * pygame
 * SDL-1.2
 * SDL_image
 * SDL_ttf
-* RPi.GPIO
 
 ## Screenshots
 
@@ -19,7 +16,7 @@ some screenshots from a display with 320x240
 ![](http://milaw.biz/files/kodisplay/general1.png)
 ![](http://milaw.biz/files/kodisplay/general2.png)
 
-### general & music
+### general & music playing
 
 ![](http://milaw.biz/files/kodisplay/general3.png)
 ![](http://milaw.biz/files/kodisplay/music.png)
@@ -29,7 +26,7 @@ some screenshots from a display with 320x240
 ![](http://milaw.biz/files/kodisplay/navigation1.png)
 ![](http://milaw.biz/files/kodisplay/navigation2.png)
 
-### video & screensaver
+### video playing & screensaver
 
 ![](http://milaw.biz/files/kodisplay/video.png)
 ![](http://milaw.biz/files/kodisplay/screensaver.png)
@@ -40,13 +37,14 @@ some screenshots from a display with 320x240
 
 ## Layout
 
-The layout for the screens/modes can be defined in the file .kodi/userdata/TFT.xml.
+The layout for the screens/modes can be defined in the file layout.xml in the addon profile directory.
+LibreELEC: /storage/.kodi/userdata/addon_data/script.kodisplay/layout.xml
 
 
 ## internal used lists
 
 
-### tftmodeslist (created from layout in TFT.xml)
+### layoutlist (created from self defined layout in layout.xml)
 
 #### background
 
@@ -72,6 +70,9 @@ The layout for the screens/modes can be defined in the file .kodi/userdata/TFT.x
 
 ### querylist
 
+0 - data was not queried
+1 - data was queried
+
 #### background
 | 0 | 1 | 2 |
 |---|---|---|
@@ -88,12 +89,15 @@ The layout for the screens/modes can be defined in the file .kodi/userdata/TFT.x
 | 0 or 1 | 'visible' or 'hide' | imagepath | 'local', 'url' or 'noimage' |
 
 #### progressbar
-| 0 | 1 | 2 |
-|---|---|---|
-| 0 or 1 | 'visible' or 'hide' | playtime | |
+| 0 | 1 | 2 | 3 |
+|---|---|---|---|
+| 0 or 1 | 'visible' or 'hide' | playtime | duration |
 
 
 ### renderlist (holds the surfaces)
+
+0 - no surface available
+1 - surface is available
 
 #### background
 | 0 | 1 | 2 | 3 |
@@ -103,7 +107,7 @@ The layout for the screens/modes can be defined in the file .kodi/userdata/TFT.x
 #### text
 | 0 | 1 | 2 | 3 | 4 |
 |---|---|---|---|---|
-| 0 or 1 | scrolling surface | rect | text | surface |
+| 0 or 1 | scrolling surface if needed | rect | text | surface |
 
 #### image
 | 0 | 1 | 2 | 3 |
@@ -114,3 +118,11 @@ The layout for the screens/modes can be defined in the file .kodi/userdata/TFT.x
 | 0 | 1 | 2 | 3 |
 |---|---|---|---|
 | 0 or 1 | surface | rect | playtime |
+
+
+### scrollist (holds text scroll information)
+
+#### text only
+| 0 | 1 |
+|---|---|
+| scroll direction | scroll position |

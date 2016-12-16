@@ -4,8 +4,6 @@ import time
 import string
 import traceback
 import subprocess
-import ConfigParser
-import config as glob
 
 
 
@@ -83,73 +81,3 @@ def aspect_scale(img,(bx,by)):
 			sy = by
 
 	return (int(sx), int(sy))
-
-
-
-
-class FakeSecHead(object):
-	def __init__(self, fp):
-		self.fp = fp
-		self.sechead = '[section]\n'
-
-	def readline(self):
-		if self.sechead:
-			try:
-				return self.sechead
-			finally:
-				self.sechead = None
-		else:
-			return self.fp.readline()
-
-def getDistroName():
-	parser = ConfigParser.SafeConfigParser()
-	file = '/etc/os-release'
-	distro = 'Linux'
-	if os.path.isfile(file):
-		parser.readfp(FakeSecHead(open(file)))
-		d = parser.get('section', 'NAME')
-		distro = d.replace("\"", "")
-	return distro
-
-
-
-
-
-
-
-""" https://github.com/LibreELEC/service.libreelec.settings
-   	taken from oe.py and modified
-       Copyright (C) 2009-2013 Stephan Raue (stephan@openelec.tv)
-   	   Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
-
-	xbmc.LOGDEBUG   = 0
-	xbmc.LOGINFO    = 1
-	xbmc.LOGNOTICE  = 2
-	xbmc.LOGWARNING = 3
-	xbmc.LOGERROR   = 4
-	xbmc.LOGSEVERE  = 5
-	xbmc.LOGFATAL   = 6
-	xbmc.LOGNONE    = 7
-"""
-
-def xbmc_log(level, text):
-	if glob.addonDebug and level == 0:
-		xbmc.log('# KoDisplay [DEBUG] -- ' + text, 2)
-	else:
-		xbmc.log('# KoDisplay -- ' + text, level)
-
-	if level == 4:
-		xbmc.log(traceback.format_exc(), level)
-
-def notify(title, message, time, icon, level=0):
-	try:
-		#xbmc_log(level, message)
-		msg = 'Notification("%s", "%s", %d, "%s")' % (
-			title,
-			message[0:64],
-			time,
-			icon,
-			)
-		xbmc.executebuiltin(msg)
-	except Exception, e:
-		xbmc_log(xbmc.LOGERROR, 'Notification ERROR: (' + repr(e) + ')')

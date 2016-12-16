@@ -3,36 +3,35 @@
 
   <!--General-->
   <string id="32100">General</string>
-  <string id="32101">Frames per second (FPS)</string>
-  <string id="32102">Display Startscreen</string>
-  <string id="32103">Startscreen display duration (s)</string>
-  <string id="32104">Navigation display duration (s)</string>
-  <string id="32104">Scrollspeed</string>
+  <string id="32101">SDL driver</string>
+  <string id="32102">Framebuffer device</string>
+  <string id="32103">Enable Bootsplash</string>
+  <string id="32104">Frames per second (FPS)</string>
+  <string id="32105">Navigation display duration (s)</string>
+  <string id="32106">Scrollspeed</string>
+  <string id="32107">Bootsplash is only available on LibreELEC</string>
 
   <!--Backlight-->
   <string id="32200">Backlight</string>
   <string id="32201">Active dim</string>
   <string id="32202">BCM GPIO</string>
-  <string id="32203">Dim on screensaver</string>
+  <string id="32203">Dim on screensaver</string> 
   <string id="32204">Dimmer value</string>
+  <string id="32299">Has been removed and not yet implemented again.</string>
 
   <!--Debug-->
   <string id="32300">Debug</string>
-  <string id="32301">Enable debug</string>
-  <string id="32302">Show FPS on display</string>
-  <string id="32303">Show current window id on display</string>
+  <string id="32301">Show FPS on display</string>
+  <string id="32302">Show current window id on display</string>
+  <string id="32303">Enable debug</string>
   <string id="32304">Log time per frame</string>
 
-  <!--LibreELEC Notification-->
-  <string id="32400">Please install the addon 'SDL + pygame'</string>
-  <string id="32401">Please install the addon 'Raspberry Pi Tools'</string>
-
-  <!--Common Notifications-->
-  <string id="32500">Importing pygame failed!</string>
-  <string id="32501">Importung RPi.GPIO failed!</string>
-  <string id="32502">No TFT.xml found and TFT.xml.defaults missing!</string>
-  <string id="32503">Failed to copy TFT.xml.defaults to TFT.xml!</string>
-  <string id="32504">Parsing of TFT.xml failed!</string>
-  <string id="32505">Error in TFT.xml!</string>
+  <!--Notifications-->
+  <string id="32500">Can't use the selected device! Please have a look in the log.</string>
+  <string id="32502">Importing pygame failed!</string>
+  <string id="32503">No layout.xml found and layout.xml.defaults missing!</string>
+  <string id="32504">Failed to copy layout.xml.defaults to layout.xml!</string>
+  <string id="32505">Parsing of layout.xml failed!</string>
+  <string id="32506">Error in your layout.xml!</string>
   
 </strings>
